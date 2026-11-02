@@ -1,0 +1,174 @@
+{
+  "target": "apisix",
+  "E1_routage": {
+    "/api/catalog/items": {
+      "code": 200,
+      "service": "catalog",
+      "ms": 7.04
+    },
+    "/api/orders/items": {
+      "code": 200,
+      "service": "orders",
+      "ms": 12.74
+    },
+    "/api/unknown": {
+      "code": 404,
+      "service": null,
+      "ms": 1.58
+    }
+  },
+  "E2_auth": {
+    "orders sans token": {
+      "code": 401,
+      "ms": 2.3,
+      "x_request_id": "2bdc3c77-2898-4995-94bf-5e099b8c9cec"
+    },
+    "orders token falsifié": {
+      "code": 401,
+      "ms": 1.51,
+      "x_request_id": "f6e312a4-60d1-4d6e-9fda-626389f38089"
+    },
+    "orders token valide": {
+      "code": 200,
+      "ms": 3.15,
+      "x_request_id": "b18787d1-ab57-47d7-9e50-231b38bddbde"
+    },
+    "catalog public sans token": {
+      "code": 200,
+      "ms": 5.35,
+      "x_request_id": "56b131f4-59f2-4ee0-a490-1ac2f1171530"
+    }
+  },
+  "E3_ratelimit_burst": {
+    "requests": 200,
+    "rps": 1568.3,
+    "codes": {
+      "200": 18,
+      "429": 182
+    },
+    "p50_ms": 2.38,
+    "p95_ms": 8.12,
+    "p99_ms": 19.14,
+    "mean_ms": 3.46
+  },
+  "E3_ratelimit_per_second_200_accepted": {
+    "0": 20,
+    "1": 20,
+    "2": 20,
+    "3": 20,
+    "4": 20,
+    "5": 0
+  },
+  "E4_latence_8clients": {
+    "runs": [
+      {
+        "requests": 4000,
+        "rps": 1435.8,
+        "codes": {
+          "200": 4000
+        },
+        "p50_ms": 2.36,
+        "p95_ms": 48.3,
+        "p99_ms": 56.19,
+        "mean_ms": 5.48
+      },
+      {
+        "requests": 4000,
+        "rps": 1430.7,
+        "codes": {
+          "200": 4000
+        },
+        "p50_ms": 2.48,
+        "p95_ms": 47.41,
+        "p99_ms": 55.46,
+        "mean_ms": 5.49
+      },
+      {
+        "requests": 4000,
+        "rps": 1473.8,
+        "codes": {
+          "200": 4000
+        },
+        "p50_ms": 2.33,
+        "p95_ms": 31.28,
+        "p99_ms": 55.84,
+        "mean_ms": 5.27
+      }
+    ],
+    "median_p50_ms": 2.36,
+    "median_p95_ms": 47.41,
+    "median_p99_ms": 55.84
+  },
+  "E5_debit": {
+    "8": {
+      "requests": 8602,
+      "rps": 1418.0,
+      "codes": {
+        "200": 8602
+      },
+      "p50_ms": 2.44,
+      "p95_ms": 48.02,
+      "p99_ms": 56.5,
+      "mean_ms": 5.62
+    },
+    "32": {
+      "requests": 8185,
+      "rps": 1340.1,
+      "codes": {
+        "200": 8185
+      },
+      "p50_ms": 9.77,
+      "p95_ms": 75.01,
+      "p99_ms": 93.9,
+      "mean_ms": 23.56
+    },
+    "64": {
+      "requests": 7639,
+      "rps": 1241.9,
+      "codes": {
+        "200": 7630,
+        "504": 9
+      },
+      "p50_ms": 16.6,
+      "p95_ms": 159.45,
+      "p99_ms": 264.47,
+      "mean_ms": 50.43
+    }
+  },
+  "E6_repartition": {
+    "codes": {
+      "200": 40
+    },
+    "instances": {
+      "orders-1": 21,
+      "orders-2": 19
+    },
+    "max_ms": 5.0,
+    "mean_ms": 2.8
+  },
+  "E7a_une_instance_orders_coupee": {
+    "codes": {
+      "200": 40
+    },
+    "instances": {
+      "orders-2": 40
+    },
+    "max_ms": 1004.9,
+    "mean_ms": 911.2
+  },
+  "E7b_orders_totalement_coupe": {
+    "codes": {
+      "502": 10
+    },
+    "instances": {},
+    "max_ms": 2003.2,
+    "mean_ms": 1982.0
+  },
+  "E7c_catalog_coupe": {
+    "code": 504,
+    "ms": 3005.0
+  },
+  "E7d_reprise_catalog": {
+    "code": 200
+  }
+}

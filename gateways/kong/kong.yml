@@ -1,0 +1,34 @@
+_format_version: "3.0"
+consumers:
+  - username: poc-client
+    jwt_secrets:
+      - key: poc-client
+        secret: poc-shared-secret-hs256-0123456789abcdef
+        algorithm: HS256
+upstreams:
+  - name: orders-up
+    targets:
+      - {target: "orders-1:8080"}
+      - {target: "orders-2:8080"}
+services:
+  - name: catalog
+    url: http://catalog:8080
+    connect_timeout: 1000
+    retries: 2
+    routes:
+      - {name: catalog, paths: ["/api/catalog"], strip_path: false}
+  - name: orders
+    host: orders-up
+    port: 8080
+    protocol: http
+    connect_timeout: 1000
+    retries: 2
+    routes:
+      - {name: orders, paths: ["/api/orders"], strip_path: false}
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config: {second: 20, policy: local, limit_by: consumer, error_code: 429}
+plugins:
+  - name: correlation-id
+    config: {header_name: X-Request-Id, generator: uuid, echo_downstream: true}

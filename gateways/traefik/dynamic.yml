@@ -1,0 +1,41 @@
+http:
+  routers:
+    catalog:
+      rule: PathPrefix(`/api/catalog`)
+      entryPoints: [web]
+      middlewares: [retry]
+      service: catalog
+    orders:
+      rule: PathPrefix(`/api/orders`)
+      entryPoints: [web]
+      middlewares: [retry, jwt, ratelimit]
+      service: orders
+  middlewares:
+    retry:
+      retry:
+        attempts: 2
+        initialInterval: 10ms
+    # Traefik OSS n'a pas de plugin JWT natif : délégation à un service d'identité (forwardAuth)
+    jwt:
+      forwardAuth:
+        address: http://auth:8080/verify
+    ratelimit:
+      rateLimit:
+        average: 20
+        period: 1s
+        burst: 20
+        sourceCriterion:
+          requestHeaderName: Authorization
+  services:
+    catalog:
+      loadBalancer:
+        servers: [{url: "http://catalog:8080"}]
+    orders:
+      loadBalancer:
+        healthCheck:
+          path: /health
+          interval: 1s
+          timeout: 1s
+        servers:
+          - url: http://orders-1:8080
+          - url: http://orders-2:8080

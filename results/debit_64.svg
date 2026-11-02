@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="196" font-family="sans-serif" font-size="13">
+<rect width="640" height="196" fill="white"/><text x="10" y="24" font-weight="bold">Débit à 64 clients (req/s)</text>
+<text x="10" y="60">baseline</text><rect x="150" y="44" width="394.8" height="22" fill="#888"/><text x="550.8" y="60">1263.3 rps</text>
+<text x="10" y="94">kong</text><rect x="150" y="78" width="410.0" height="22" fill="#1a73e8"/><text x="566.0" y="94">1312.0 rps</text>
+<text x="10" y="128">apisix</text><rect x="150" y="112" width="388.1" height="22" fill="#e8710a"/><text x="544.1" y="128">1241.9 rps</text>
+<text x="10" y="162">traefik</text><rect x="150" y="146" width="391.8" height="22" fill="#188038"/><text x="547.8" y="162">1253.9 rps</text></svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="196" font-family="sans-serif" font-size="13">
+<rect width="640" height="196" fill="white"/><text x="10" y="24" font-weight="bold">Latence P99 (ms) – 8 clients</text>
+<text x="10" y="60">baseline</text><rect x="150" y="44" width="410.0" height="22" fill="#888"/><text x="566.0" y="60">58.03 ms</text>
+<text x="10" y="94">kong</text><rect x="150" y="78" width="362.5" height="22" fill="#1a73e8"/><text x="518.5" y="94">51.31 ms</text>
+<text x="10" y="128">apisix</text><rect x="150" y="112" width="394.5" height="22" fill="#e8710a"/><text x="550.5" y="128">55.84 ms</text>
+<text x="10" y="162">traefik</text><rect x="150" y="146" width="315.9" height="22" fill="#188038"/><text x="471.9" y="162">44.71 ms</text></svg>

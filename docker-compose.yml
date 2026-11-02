@@ -1,0 +1,72 @@
+# Backends + identité communs ; une seule gateway à la fois (profils) pour un partage CPU équitable.
+x-backend: &backend
+  image: python:3.12-alpine
+  command: ["python", "/app/app.py"]
+  volumes: ["./backends/app.py:/app/app.py:ro"]
+  cpus: 0.5
+  mem_limit: 128m
+
+services:
+  catalog:
+    <<: *backend
+    environment: {SERVICE_NAME: catalog, INSTANCE: catalog-1}
+    ports: ["8081:8080"]            # accès direct = baseline sans gateway
+  orders-1:
+    <<: *backend
+    environment: {SERVICE_NAME: orders, INSTANCE: orders-1}
+    ports: ["8082:8080"]
+  orders-2:
+    <<: *backend
+    environment: {SERVICE_NAME: orders, INSTANCE: orders-2}
+  auth:
+    image: python:3.12-alpine
+    command: ["python", "/app/auth.py"]
+    volumes: ["./backends/auth.py:/app/auth.py:ro"]
+    environment: {JWT_SECRET: "${JWT_SECRET}"}
+    ports: ["8083:8080"]
+    cpus: 0.25
+    mem_limit: 64m
+
+  kong:
+    profiles: ["kong"]
+    image: kong:3.8
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/kong.yml
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+    volumes: ["./gateways/kong/kong.yml:/kong/kong.yml:ro"]
+    ports: ["8000:8000", "8001:8001"]
+    cpus: 1.0
+    mem_limit: 512m
+    depends_on: [catalog, orders-1, orders-2]
+
+  apisix:
+    profiles: ["apisix"]
+    image: apache/apisix:3.11.0-debian
+    volumes:
+      - ./gateways/apisix/conf/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+      - ./gateways/apisix/conf/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
+    ports: ["9080:9080"]
+    cpus: 1.0
+    mem_limit: 512m
+    depends_on: [catalog, orders-1, orders-2]
+
+  traefik:
+    profiles: ["traefik"]
+    image: traefik:v3.2
+    command:
+      - --entrypoints.web.address=:8088
+      - --providers.file.filename=/etc/traefik/dynamic.yml
+      - --accesslog=true
+      - --log.level=INFO
+      - --metrics.prometheus=true
+      - --ping=true
+      - --serverstransport.forwardingtimeouts.dialtimeout=1s
+    volumes: ["./gateways/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro"]
+    ports: ["8088:8088"]
+    cpus: 1.0
+    mem_limit: 512m
+    depends_on: [catalog, orders-1, orders-2, auth]
