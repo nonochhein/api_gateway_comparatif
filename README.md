@@ -24,8 +24,10 @@ Il utilise les vrais formats du backend : `GET /api/products` (page), `GET /api/
 Ouvrir `http://localhost:8000`. Commander demande un jeton du SSO : le SSO n'existant pas encore, le bouton « Connexion SSO » accepte un JWT collé à la main.
 Une console en bas de page affiche statut et `X-Request-Id` de chaque appel.
 
-Curseur : **poing fermé** en navigation, **doigt d'honneur 8 bit** au clic (le curseur change 0,45 s et un petit sprite jaillit, y compris au tactile).
+Curseur 8 bit **noir et blanc** : **poing fermé** en navigation, **doigt d'honneur** dès qu'on survole un élément cliquable (liens, boutons, filtres, fiches produit, champ de recherche) et au clic (un petit sprite jaillit, y compris au tactile).
 Les curseurs sont générés par `python3 scripts/make_cursors.py` (PNG 32×32 en pixel art, modifiables dans le script).
+
+Autres fonctions du site : fiche produit au clic sur l'image ou le nom (choix de la quantité), panier conservé dans le navigateur (`localStorage`) avec bouton « Vider », raccourci `/` pour la recherche, `Échap` pour fermer, bouton de retour en haut, console gateway effaçable.
 
 Images : chaque produit affiche l'icône indiquée par son `imageUrl` (`/images/weapons/*.png`), ou une silhouette SVG dessinée pour le projet (armure, munitions, produits créés sans image). Pour remplacer une image par une photo, déposer les fichiers dans `frontend/images/photos/` et les lister dans
 `frontend/images/photos/manifest.json` sous la forme `{"GTA-PISTOL": "pistol.jpg", "GTA-SNIPER": "sniper.jpg"}` (clé = `sku` du produit). Aucun autre changement n'est nécessaire.

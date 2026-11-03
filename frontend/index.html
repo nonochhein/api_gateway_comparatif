@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ammu-Nation — Los Santos</title>
 <meta name="description" content="Boutique fictive inspirée de GTA V. Projet pédagogique API Gateway.">
-<link rel="stylesheet" href="/style.css?v=4">
+<link rel="stylesheet" href="/style.css?v=5">
+<link rel="preload" as="image" href="/cursors/flip.png?v=4">
 </head>
 <body>
-<header class="top">
+<a class="skip" href="#catalogue">Aller au catalogue</a>
+<header class="top" id="top">
   <div class="top-in">
     <a class="logo" href="/"><b>AMMU-NATION</b><small>Los Santos<br>Since 1992</small></a>
     <nav><a href="#catalogue">Catalogue</a><a href="#gateway">Gateway</a></nav>
@@ -25,7 +27,7 @@
     <span class="tag">Los Santos · Ouvert 24/7</span>
     <h1>L'arsenal de <em>Los Santos</em></h1>
     <p>Boutique fictive inspirée de GTA V. Aucune vente réelle : un projet pédagogique pour tester une API Gateway devant un vrai backend.</p>
-    <div class="cta"><a class="btn" href="#catalogue" style="text-decoration:none;display:inline-block">Voir le catalogue</a></div>
+    <div class="cta"><a class="btn" href="#catalogue" style="text-decoration:none;display:inline-block">Voir le catalogue</a><a class="btn ghost" href="#gateway" style="text-decoration:none;display:inline-block">Console gateway</a></div>
     <div class="stats">
       <div><b id="statCount">—</b><span>armes au catalogue</span></div>
       <div><b>GTA$</b><span>paiement en dollars virtuels</span></div>
@@ -37,7 +39,7 @@
 <main id="catalogue">
   <div class="section-title"><h2>Catalogue</h2><span class="count" id="countInfo"></span></div>
   <div class="tools">
-    <input id="search" type="search" placeholder="Rechercher une arme…" aria-label="Rechercher une arme">
+    <div class="search"><input id="search" type="search" placeholder="Rechercher une arme…" aria-label="Rechercher une arme" autocomplete="off"><kbd>/</kbd></div>
     <div class="filters" id="filters"></div>
   </div>
   <div id="grid" class="grid"></div>
@@ -46,8 +48,9 @@
 
 <div id="veil" class="veil hidden"></div>
 <aside id="cart" class="cart hidden" aria-label="Panier">
-  <div class="cart-head"><h2>Votre panier</h2><button id="closeCart" class="btn ghost" style="color:#000;border-color:#000" aria-label="Fermer">✕</button></div>
+  <div class="cart-head"><h2>Votre panier</h2><button id="closeCart" class="x" style="position:static" aria-label="Fermer">✕</button></div>
   <ul id="cartItems"></ul>
+  <div class="cart-foot"><span id="cartLines"></span><button id="clearCart" class="link">Vider le panier</button></div>
   <div class="total"><span>Total</span><span id="cartTotal">GTA$ 0</span></div>
   <button id="checkout" class="btn block">Commander</button>
   <p id="orderMsg" class="msg"></p>
@@ -55,7 +58,7 @@
 
 <section id="gateway" class="gw">
   <div class="box">
-    <h2>Console API Gateway</h2>
+    <div class="gw-head"><h2>Console API Gateway</h2><button id="clearLog" class="link">Effacer</button></div>
     <p>Chaque appel du site passe par Kong : catalogue public ; commandes protégées par un jeton du SSO, quota 30 req/s.</p>
     <table>
       <thead><tr><th>Heure</th><th>Requête</th><th>Statut</th><th>X-Request-Id</th></tr></thead>
@@ -64,8 +67,27 @@
   </div>
 </section>
 
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="modal-box">
+    <button id="closeModal" class="x" aria-label="Fermer">✕</button>
+    <div class="modal-pic"><img id="mImg" alt=""></div>
+    <div class="modal-body">
+      <span id="mCat" class="tagline"></span>
+      <h2 id="mTitle"></h2>
+      <p id="mDesc"></p>
+      <div class="meta"><span>Réf. <b id="mSku"></b></span><span id="mStock" class="stock"></span></div>
+      <div class="row">
+        <span id="mPrice" class="price"></span>
+        <span class="qty"><button id="mMinus" aria-label="Moins">−</button><output id="mQty">1</output><button id="mPlus" aria-label="Plus">+</button></span>
+      </div>
+      <button id="mAdd" class="btn block">Ajouter au panier</button>
+    </div>
+  </div>
+</div>
+
+<button id="toTop" class="totop" aria-label="Revenir en haut">↑</button>
 <div id="toasts" class="toasts" aria-live="polite"></div>
 <footer><b>Ammu-Nation</b> — parodie. Univers GTA V © Rockstar Games. Site de démonstration sans lien officiel ; aucune arme n'est vendue.</footer>
-<script src="/app.js?v=3"></script>
+<script src="/app.js?v=4"></script>
 </body>
 </html>

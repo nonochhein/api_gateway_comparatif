@@ -1,15 +1,22 @@
 /* Ammu-Nation (parodie) — rouge / blanc / noir, accent jaune.
-   Curseurs 8 bit : poing fermé en navigation, doigt d'honneur au clic (voir app.js). */
+   Curseurs 8 bit noir et blanc : poing fermé en navigation, doigt d'honneur sur tout ce qui est cliquable et au clic (voir app.js). */
 :root{--bg:#f1efe9;--card:#fff;--line:#dedad0;--red:#c8102e;--red-d:#9d0b23;--yellow:#ffc20e;--text:#161616;--muted:#6b6b6b;--ink:#0d0d0d;--radius:10px;--shadow:0 2px 0 rgba(0,0,0,.06),0 10px 24px -12px rgba(0,0,0,.35)}
 *{box-sizing:border-box}
-html,body,*{cursor:url(/cursors/fist.png?v=3) 16 6,auto}
-html.flip,html.flip *{cursor:url(/cursors/flip.png?v=3) 16 2,auto!important}
+html,body,*{cursor:url(/cursors/fist.png?v=4) 16 6,auto}
+a[href],a[href] *,button:not(:disabled),button:not(:disabled) *,[role=button],label,select,summary,input,textarea,.clickable,.clickable *{cursor:url(/cursors/flip.png?v=4) 16 2,pointer}
+html.flip,html.flip *{cursor:url(/cursors/flip.png?v=4) 16 2,auto!important}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.skip{position:absolute;left:-999px;top:8px;z-index:200;background:var(--yellow);color:#000;padding:8px 14px;font-weight:800;border-radius:4px}
+.skip:focus{left:8px}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body.lock{overflow:hidden}
 body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.45}
 .hidden{display:none!important}
 a{color:inherit}
 
 /* En-tête : enseigne façon Ammu-Nation */
-.top{position:sticky;top:0;z-index:20;background:var(--ink);border-bottom:4px solid var(--red)}
+.top{position:sticky;top:0;z-index:20;background:var(--ink);border-bottom:4px solid var(--red);transition:box-shadow .2s}
+.top.scrolled{box-shadow:0 8px 20px -8px rgba(0,0,0,.6)}
 .top-in{max-width:1240px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:22px}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
 .logo b{background:var(--red);color:#fff;font-weight:900;letter-spacing:.1em;font-size:1.35rem;padding:6px 14px;border:3px solid #fff;border-radius:4px;box-shadow:0 0 0 3px var(--red),4px 4px 0 3px var(--yellow);text-shadow:2px 2px 0 var(--ink)}
@@ -29,6 +36,8 @@ nav a:hover{color:var(--yellow);border-color:var(--yellow)}
 .btn.dark:hover{background:#222}
 .btn.block{width:100%;padding:13px}
 .badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:999px;background:var(--yellow);color:#000;font-size:.72rem;margin-left:6px}
+.badge.bump{animation:bump .35s}
+@keyframes bump{40%{transform:scale(1.5)}}
 
 /* Bandeau d'accueil */
 .hero{position:relative;overflow:hidden;color:#fff;background:
@@ -52,7 +61,10 @@ main{max-width:1240px;margin:0 auto;padding:30px 20px 10px}
 .section-title h2::after{content:"";display:block;width:56px;height:4px;background:var(--red);margin-top:6px}
 .count{color:var(--muted);font-size:.85rem}
 .tools{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:20px}
-.tools input[type=search]{padding:10px 14px;border:2px solid var(--ink);border-radius:6px;min-width:240px;font-size:.92rem;background:#fff}
+.search{position:relative;display:flex;align-items:center}
+.search kbd{position:absolute;right:10px;font:700 .7rem ui-monospace,Menlo,monospace;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 6px;background:#f6f4ef;pointer-events:none}
+.search input:focus+kbd,.search input:not(:placeholder-shown)+kbd{display:none}
+.tools input[type=search]{padding:10px 40px 10px 14px;border:2px solid var(--ink);border-radius:6px;min-width:260px;font-size:.92rem;background:#fff}
 .tools input[type=search]:focus{outline:3px solid var(--yellow)}
 .filters{display:flex;flex-wrap:wrap;gap:8px}
 .chip{border:2px solid var(--ink);background:#fff;color:var(--ink);padding:6px 14px;border-radius:999px;font-size:.8rem;font-weight:700;transition:background .12s,color .12s}
@@ -84,6 +96,34 @@ main{max-width:1240px;margin:0 auto;padding:30px 20px 10px}
 .pager{display:flex;gap:14px;justify-content:center;align-items:center;margin:28px 0 10px}
 .pager .btn.ghost{color:var(--ink);border-color:var(--ink)}
 .empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px 0}
+.empty .btn{margin-top:12px}
+.body h3.clickable:hover{color:var(--red)}
+.pic.clickable::before{content:"Voir la fiche";position:absolute;left:50%;bottom:10px;transform:translate(-50%,6px);z-index:1;background:rgba(0,0,0,.8);color:#fff;font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;border-radius:3px;opacity:0;transition:opacity .15s,transform .15s}
+.card:hover .pic.clickable::before{opacity:1;transform:translate(-50%,0)}
+
+/* Fiche produit */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:20px;animation:fade .2s}
+.modal-box{position:relative;background:#fff;border-radius:var(--radius);border-top:6px solid var(--red);width:min(820px,100%);max-height:calc(100vh - 40px);overflow:auto;display:grid;grid-template-columns:1.1fr 1fr;box-shadow:0 30px 60px -20px rgba(0,0,0,.6);animation:rise .25s both}
+.modal-pic{background:radial-gradient(circle at 50% 45%,#fff 0,#e4e4e4 70%,#cfcfcf 100%);display:grid;place-items:center;min-height:280px;padding:28px}
+.modal-pic img{max-width:100%;max-height:320px;object-fit:contain;filter:drop-shadow(0 6px 4px rgba(0,0,0,.25))}
+.modal-body{padding:26px 24px;display:flex;flex-direction:column;gap:10px}
+.modal-body h2{margin:0;font-size:1.6rem;text-transform:uppercase;line-height:1.1}
+.modal-body p{margin:0;color:var(--muted)}
+.modal-body .row{margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+.modal-body .price{font-size:1.5rem}
+.tagline{align-self:flex-start;background:var(--ink);color:#fff;font-size:.64rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;border-radius:3px}
+.meta{display:flex;gap:16px;font-size:.76rem;color:var(--muted)}.meta b{color:var(--text)}
+.x{position:absolute;right:10px;top:10px;z-index:2;width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);background:#fff;font-weight:900}
+.x:hover{background:var(--yellow)}
+.qty{display:inline-flex;align-items:center;border:2px solid var(--ink);border-radius:6px;overflow:hidden}
+.qty button{background:#fff;border:0;width:32px;height:34px;font-weight:900;font-size:1rem}
+.qty button:hover:not(:disabled){background:var(--yellow)}
+.qty output{min-width:30px;text-align:center;font-weight:800}
+
+/* Retour en haut */
+.totop{position:fixed;right:18px;bottom:18px;z-index:25;width:44px;height:44px;border-radius:50%;border:2px solid #fff;background:var(--ink);color:#fff;font-size:1.1rem;font-weight:900;box-shadow:0 8px 18px rgba(0,0,0,.35);opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .2s,transform .2s}
+.totop.show{opacity:1;transform:none;pointer-events:auto}
+.totop:hover{background:var(--red)}
 
 /* Panier */
 .veil{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:30;animation:fade .2s}
@@ -100,6 +140,9 @@ main{max-width:1240px;margin:0 auto;padding:30px 20px 10px}
 .cart li .ctl button{background:#fff;border:2px solid var(--ink);border-radius:4px;font-weight:900;width:26px;height:26px;padding:0}
 .cart li .ctl button:hover{background:var(--yellow)}
 .cart .none{color:var(--muted);text-align:center;padding:30px 0}
+.cart-foot{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--muted)}
+.link{background:none;border:0;padding:0;color:var(--red);font-weight:700;font-size:.8rem;text-decoration:underline}
+.link:disabled{color:#aaa;text-decoration:none}
 .total{display:flex;justify-content:space-between;font-size:1.1rem;font-weight:900;border-top:3px solid var(--ink);padding-top:12px}
 .msg{min-height:1.4em;font-size:.86rem;margin:0}
 .msg.ok{color:#1c7c2b}.msg.err{color:var(--red)}
@@ -107,7 +150,10 @@ main{max-width:1240px;margin:0 auto;padding:30px 20px 10px}
 /* Console gateway */
 .gw{max-width:1240px;margin:30px auto 50px;padding:0 20px}
 .gw .box{background:var(--ink);color:#d7d7d7;border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
+.gw-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .gw h2{margin:0 0 4px;color:#fff;text-transform:uppercase;letter-spacing:.05em;font-size:1.1rem}
+.gw .link{color:#aaa}.gw .link:hover{color:var(--yellow)}
+.gw tbody:empty::after{content:"Aucun appel pour l'instant.";display:block;padding:8px;color:#666}
 .gw p{margin:0 0 12px;color:#999;font-size:.84rem}
 .gw table{width:100%;border-collapse:collapse;font:12px ui-monospace,Menlo,Consolas,monospace}
 .gw th,.gw td{text-align:left;padding:5px 8px;border-bottom:1px solid #2a2a2a;word-break:break-all}
@@ -125,9 +171,12 @@ footer{background:var(--ink);color:#aaa;padding:26px 20px;text-align:center;font
 footer b{color:#fff}
 
 /* Doigt d'honneur 8 bit qui jaillit au clic */
-.pop{position:fixed;z-index:100;width:48px;height:48px;margin:-24px 0 0 -24px;pointer-events:none;image-rendering:pixelated;animation:pop .7s ease-out forwards}
+.pop{position:fixed;z-index:100;width:48px;height:48px;margin:-24px 0 0 -24px;pointer-events:none;image-rendering:pixelated;filter:grayscale(1) drop-shadow(2px 2px 0 rgba(0,0,0,.35));animation:pop .7s ease-out forwards}
 @keyframes pop{0%{transform:scale(.4) translateY(0);opacity:1}25%{transform:scale(1.25) translateY(-8px)}100%{transform:scale(1) translateY(-46px);opacity:0}}
-@media (prefers-reduced-motion:reduce){.pop,.card,.cart,.veil,.toast{animation:none}.card,.pic img{transition:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.pop,.card,.cart,.veil,.toast,.modal,.modal-box,.badge.bump{animation:none}.card,.pic img,.totop{transition:none}}
+@media(max-width:700px){.modal-box{grid-template-columns:1fr}.modal-pic{min-height:200px}}
+.logo b,.btn{white-space:nowrap}
+@media(max-width:960px){.logo small,.who{display:none}nav{gap:16px;margin-left:0}}
 @media(max-width:700px){nav,.who,.logo small{display:none}.top-in{padding:8px 12px;gap:8px;justify-content:space-between}
  .logo b{font-size:.95rem;padding:4px 9px;white-space:nowrap;letter-spacing:.06em;box-shadow:0 0 0 2px var(--red),3px 3px 0 2px var(--yellow)}
  .actions{gap:6px}.btn{padding:8px 10px;font-size:.68rem}.hero-in{padding:36px 16px 46px}.tools input[type=search]{min-width:0;width:100%}}

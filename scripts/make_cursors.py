@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Génère les curseurs 8 bit (PNG 32x32, grille 16x16 agrandie x2) : poing fermé (navigation) et doigt d'honneur (clic).
+"""Génère les curseurs 8 bit noir et blanc (PNG 32x32, grille 16x16 agrandie x2) :
+poing fermé (navigation) et doigt d'honneur (survol d'un élément cliquable, et au clic).
 Stdlib uniquement. Usage : python3 scripts/make_cursors.py   ->  frontend/cursors/{fist,flip}.png"""
 import os, struct, zlib
 
-SKIN, SHADE, INK = (242, 194, 155, 255), (214, 160, 122, 255), (26, 26, 26, 255)
+SKIN, SHADE, INK = (255, 255, 255, 255), (168, 168, 168, 255), (0, 0, 0, 255)   # noir et blanc
 N, SCALE = 16, 2
 
 def rect(g, x0, x1, y0, y1, v=1):

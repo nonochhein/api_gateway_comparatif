@@ -5,15 +5,17 @@ const PAGE_SIZE = 12;
 let products = [], cats = [], cart = {}, token = null, page = 0, totalPages = 1, total = 0, catId = "", search = "";
 let photos = {};   // sku -> fichier, listé dans /images/photos/manifest.json (vide tant qu'aucune photo n'est ajoutée)
 try { token = sessionStorage.getItem("token"); } catch (e) {}
+try { cart = JSON.parse(localStorage.getItem("ammu-cart")) || {}; } catch (e) { cart = {}; }
+const saveCart = () => { try { localStorage.setItem("ammu-cart", JSON.stringify(cart)); } catch (e) {} };
 
-/* ---------- Curseur : poing fermé en navigation, doigt d'honneur 8 bit au clic ---------- */
+/* ---------- Curseur noir et blanc : poing fermé en navigation, doigt d'honneur sur le cliquable (CSS) et au clic ---------- */
 let flipTimer;
 document.addEventListener("pointerdown", (e) => {
   document.documentElement.classList.add("flip");          // le curseur CSS passe en doigt d'honneur
   clearTimeout(flipTimer);
   flipTimer = setTimeout(() => document.documentElement.classList.remove("flip"), 450);
   const s = document.createElement("img");                  // + sprite qui jaillit (visible aussi au tactile)
-  s.className = "pop"; s.src = "/cursors/flip.png?v=3"; s.alt = "";
+  s.className = "pop"; s.src = "/cursors/flip.png?v=4"; s.alt = "";
   s.style.left = e.clientX + "px"; s.style.top = e.clientY + "px";
   document.body.appendChild(s); setTimeout(() => s.remove(), 750);
 }, true);
@@ -43,7 +45,7 @@ function trace(method, url, res) {
   tr.innerHTML = `<td>${new Date().toLocaleTimeString("fr-FR")}</td><td>${esc(method)} ${esc(url)}</td>` +
     `<td class="s${String(res.status)[0]}">${res.status}</td><td>${esc(res.headers.get("X-Request-Id") || "—")}</td>`;
   $("log").prepend(tr);
-  while ($("log").children.length > 8) $("log").lastChild.remove();
+  while ($("log").children.length > 12) $("log").lastChild.remove();
 }
 async function api(method, url, body) {
   const headers = {};
@@ -94,19 +96,26 @@ async function loadProducts() {
   }
 }
 function renderGrid() {
-  $("grid").innerHTML = products.length ? "" : '<p class="empty">Aucune arme trouvée.</p>';
+  $("grid").innerHTML = "";
+  if (!products.length) {
+    $("grid").innerHTML = `<div class="empty"><p>Aucune arme trouvée${search ? ` pour « ${esc(search)} »` : ""}.</p>` +
+      (search || catId ? '<button class="btn dark" id="reset">Réinitialiser les filtres</button>' : "") + "</div>";
+    if ($("reset")) $("reset").onclick = () => { search = ""; catId = ""; page = 0; $("search").value = ""; renderFilters(); loadProducts(); };
+  }
   const catName = (id) => (cats.find((c) => c.id === id) || {}).name || "";
   products.forEach((p, i) => {
     const out = p.stockQuantity <= 0, low = !out && p.stockQuantity <= 10;
     const d = document.createElement("article"); d.className = "card"; d.style.animationDelay = i * 25 + "ms";
-    d.innerHTML = `<div class="pic"><img src="${esc(imgOf(p))}" alt="${esc(p.name)}" loading="lazy">` +
+    d.innerHTML = `<div class="pic clickable"><img src="${esc(imgOf(p))}" alt="${esc(p.name)}" loading="lazy" decoding="async">` +
       `<span class="cat">${esc(catName(p.categoryId))}</span>${out ? '<span class="flag out">Rupture</span>' : low ? '<span class="flag">Dernières pièces</span>' : ""}</div>` +
-      `<div class="body"><h3>${esc(p.name)}</h3><p>${esc(p.description)}</p>` +
+      `<div class="body"><h3 class="clickable" tabindex="0" role="button">${esc(p.name)}</h3><p>${esc(p.description)}</p>` +
       `<div class="stock ${low ? "low" : ""}">${out ? "Indisponible" : "Stock : " + p.stockQuantity}</div>` +
       `<div class="row"><span class="price"><small>GTA$</small>${Number(p.price).toLocaleString("fr-FR")}</span>` +
       `<button class="btn" ${out ? "disabled" : ""}>Ajouter</button></div></div>`;
     d.querySelector("img").onerror = (e) => { if (!e.target.dataset.fb) { e.target.dataset.fb = 1; e.target.src = p.imageUrl || "/images/pistol.svg"; } };
-    d.querySelector("button").onclick = () => addToCart(p);
+    d.querySelector(".row button").onclick = () => addToCart(p);
+    d.querySelector(".pic").onclick = d.querySelector("h3").onclick = () => openProduct(p);
+    d.querySelector("h3").onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openProduct(p); } };
     $("grid").appendChild(d);
   });
   $("pageInfo").textContent = `Page ${page + 1} / ${totalPages}`;
@@ -115,14 +124,49 @@ function renderGrid() {
 }
 
 /* ---------- Panier ---------- */
+const lockScroll = () => document.body.classList.toggle("lock", !$("cart").classList.contains("hidden") || !$("modal").classList.contains("hidden"));
 function openCart(open) {
-  $("cart").classList.toggle("hidden", !open); $("veil").classList.toggle("hidden", !open);
+  $("cart").classList.toggle("hidden", !open); $("veil").classList.toggle("hidden", !open); lockScroll();
+  if (open) $("closeCart").focus();
 }
-function addToCart(p) {
+function addToCart(p, n = 1) {
   const cur = cart[p.id] ? cart[p.id].qty : 0;
   if (cur >= p.stockQuantity) return toast("Stock maximum atteint : " + p.name, true);
-  cart[p.id] = { p, qty: cur + 1 }; renderCart(); toast(p.name + " ajouté au panier");
+  const qty = Math.min(cur + n, p.stockQuantity);
+  cart[p.id] = { p, qty }; renderCart(); toast(`${qty - cur > 1 ? qty - cur + " × " : ""}${p.name} ajouté au panier`);
+  const b = $("cartCount"); b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump");
 }
+
+/* ---------- Fiche produit ---------- */
+let shown = null, mQty = 1;
+function openProduct(p) {
+  shown = p; mQty = 1;
+  const out = p.stockQuantity <= 0;
+  $("mImg").src = imgOf(p); $("mImg").alt = p.name;
+  $("mImg").onerror = (e) => { if (!e.target.dataset.fb) { e.target.dataset.fb = 1; e.target.src = p.imageUrl || "/images/pistol.svg"; } };
+  delete $("mImg").dataset.fb;
+  $("mCat").textContent = (cats.find((c) => c.id === p.categoryId) || {}).name || "Ammu-Nation";
+  $("mTitle").textContent = p.name; $("mDesc").textContent = p.description || "";
+  $("mSku").textContent = p.sku || "—";
+  $("mStock").textContent = out ? "Indisponible" : "Stock : " + p.stockQuantity;
+  $("mStock").className = "stock" + (!out && p.stockQuantity <= 10 ? " low" : "");
+  $("mPrice").innerHTML = `<small>GTA$</small>${Number(p.price).toLocaleString("fr-FR")}`;
+  renderQty();
+  $("modal").classList.remove("hidden"); lockScroll(); $("mAdd").focus();
+}
+function renderQty() {
+  const max = shown.stockQuantity - (cart[shown.id] ? cart[shown.id].qty : 0);
+  $("mQty").textContent = mQty;
+  $("mMinus").disabled = mQty <= 1; $("mPlus").disabled = mQty >= max;
+  $("mAdd").disabled = max <= 0;
+  $("mAdd").textContent = shown.stockQuantity <= 0 ? "Rupture de stock" : max <= 0 ? "Stock maximum dans le panier" : `Ajouter — ${money(shown.price * mQty)}`;
+}
+function closeProduct() { $("modal").classList.add("hidden"); lockScroll(); }
+$("mMinus").onclick = () => { mQty--; renderQty(); };
+$("mPlus").onclick = () => { mQty++; renderQty(); };
+$("mAdd").onclick = () => { addToCart(shown, mQty); closeProduct(); };
+$("closeModal").onclick = closeProduct;
+$("modal").onclick = (e) => { if (e.target === $("modal")) closeProduct(); };
 function renderCart() {
   let total = 0, count = 0; $("cartItems").innerHTML = "";
   Object.entries(cart).forEach(([id, { p, qty }]) => {
@@ -133,13 +177,17 @@ function renderCart() {
     li.querySelector("img").onerror = (e) => { e.target.src = p.imageUrl || "/images/pistol.svg"; };
     li.querySelectorAll("button").forEach((b) => b.onclick = () => {
       const q = qty + Number(b.dataset.d);
-      if (q <= 0) delete cart[id]; else if (q <= p.stockQuantity) cart[id].qty = q;
+      if (q <= 0) delete cart[id]; else if (q <= p.stockQuantity) cart[id].qty = q; else toast("Stock maximum atteint : " + p.name, true);
       renderCart();
     });
     $("cartItems").appendChild(li);
   });
   if (!count) $("cartItems").innerHTML = '<li class="none" style="display:block">Votre panier est vide.</li>';
   $("cartTotal").textContent = money(total); $("cartCount").textContent = count;
+  const lines = Object.keys(cart).length;
+  $("cartLines").textContent = lines ? `${count} article${count > 1 ? "s" : ""}, ${lines} référence${lines > 1 ? "s" : ""}` : "";
+  $("clearCart").disabled = $("checkout").disabled = !count;
+  saveCart();
 }
 function say(msg, ok) { $("orderMsg").textContent = msg; $("orderMsg").className = "msg " + (ok ? "ok" : "err"); }
 
@@ -147,11 +195,16 @@ async function checkout() {
   const items = Object.entries(cart).map(([productId, { qty }]) => ({ productId, quantity: qty }));
   if (!items.length) return say("Panier vide.", false);
   if (!token) return say("Connexion SSO requise pour commander (le SSO n'est pas encore en place : collez un jeton).", false);
-  const res = await api("POST", "/api/orders", { userId: userFromToken(), items });
+  $("checkout").disabled = true; $("checkout").textContent = "Envoi…";
+  let res;
+  try { res = await api("POST", "/api/orders", { userId: userFromToken(), items }); }
+  catch (e) { say("Gateway injoignable — réessayez.", false); return; }
+  finally { $("checkout").textContent = "Commander"; $("checkout").disabled = !Object.keys(cart).length; }
   let body = {}; try { body = await res.json(); } catch (e) {}
   if (res.status === 201 || res.status === 200) {
     cart = {}; renderCart();
     say(`Commande ${String(body.id || "").slice(0, 8)} enregistrée — statut ${body.status}, total ${money(body.totalAmount ?? 0)}.`, true);
+    toast("Commande enregistrée. Merci de votre confiance, citoyen.");
     loadProducts();
   } else if (res.status === 401) { token = null; refreshWho(); say("401 — jeton absent, invalide ou expiré.", false); }
   else if (res.status === 429) say("429 — trop de requêtes, réessayez dans une seconde.", false);
@@ -166,10 +219,19 @@ $("login").onclick = () => {
 $("cartBtn").onclick = () => openCart($("cart").classList.contains("hidden"));
 $("closeCart").onclick = () => openCart(false);
 $("veil").onclick = () => openCart(false);
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") openCart(false); });
+$("clearCart").onclick = () => { if (confirm("Vider le panier ?")) { cart = {}; renderCart(); } };
+$("clearLog").onclick = () => { $("log").innerHTML = ""; };
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { if (!$("modal").classList.contains("hidden")) closeProduct(); else openCart(false); }
+  if (e.key === "/" && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $("search").focus(); }
+});
+const onScroll = () => { $("top").classList.toggle("scrolled", scrollY > 8); $("toTop").classList.toggle("show", scrollY > 600); };
+addEventListener("scroll", onScroll, { passive: true }); onScroll();
+$("toTop").onclick = () => scrollTo({ top: 0 });
+const toCatalogue = () => { const t = $("catalogue").getBoundingClientRect().top; if (t < 0) $("catalogue").scrollIntoView(); };
 $("checkout").onclick = checkout;
-$("prev").onclick = () => { page--; loadProducts(); };
-$("next").onclick = () => { page++; loadProducts(); };
+$("prev").onclick = () => { page--; loadProducts(); toCatalogue(); };
+$("next").onclick = () => { page++; loadProducts(); toCatalogue(); };
 let tm; $("search").oninput = (e) => { clearTimeout(tm); tm = setTimeout(() => { search = e.target.value.trim(); page = 0; loadProducts(); }, 300); };
 refreshWho(); renderCart();
 Promise.all([loadPhotos(), loadCategories()]).then(loadProducts);
