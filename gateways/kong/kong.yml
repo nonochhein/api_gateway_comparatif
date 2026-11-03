@@ -11,6 +11,14 @@ upstreams:
       - {target: "orders-1:8080"}
       - {target: "orders-2:8080"}
 services:
+  - name: front
+    url: http://front:80
+    routes:
+      - {name: front, paths: ["/"]}
+  - name: auth
+    url: http://auth:8080
+    routes:
+      - {name: auth, paths: ["/auth"], strip_path: true}
   - name: catalog
     url: http://catalog:8080
     connect_timeout: 1000

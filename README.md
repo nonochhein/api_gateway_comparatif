@@ -5,11 +5,26 @@ POC reproductible (Docker Compose) comparant trois gateways sur un **même péri
 
 > Réponse courte : voir [`docs/NOTE_DECISION.md`](docs/NOTE_DECISION.md). Résultats bruts : [`results/RESULTS.md`](results/RESULTS.md).
 
+## Application : site « Ammu-Nation » (parodie GTA V)
+
+Un front statique (`frontend/`) simule la boutique d'armes fictive d'Ammu-Nation (univers GTA V, **aucune vente réelle**).
+Il ne parle qu'à la gateway : `/` (site), `/api/catalog/*` (public), `/api/orders/*` (JWT + quota), `/auth/token` (jeton de démo).
+Une console en bas de page affiche statut, instance et `X-Request-Id` de chaque appel.
+
+```bash
+docker compose --profile kong up -d      # ou apisix / traefik
+# puis ouvrir http://localhost:8000       (APISIX : 9080, Traefik : 8088)
+```
+
+Captures : `docs/captures/`. Cliquer sur « Commander » se connecte automatiquement (jeton de démo) et envoie `POST /api/orders/items`.
+Les commandes sont gardées en mémoire par instance de backend (démo, rien n'est persisté).
+
 ## Contenu
 
 | Chemin | Rôle |
 |---|---|
 | `docker-compose.yml` | Backends factices, service d'identité, 3 gateways (profils `kong` / `apisix` / `traefik`) |
+| `frontend/` | Site Ammu-Nation (HTML/CSS/JS), servi par nginx derrière la gateway |
 | `backends/` | `app.py` (API factice catalogue/commandes), `auth.py` (émet et valide des JWT HS256) |
 | `gateways/` | Configuration de chaque gateway (déclarative, équivalente) |
 | `scripts/` | `bench.py` (générateur de charge), `experiments.py` (expériences), `run_all.sh`, `report.py` |
@@ -55,4 +70,5 @@ Le secret JWT dans `.env` est un secret **de démonstration** sans valeur.
 * Les backends Python plafonnent à ~1,3–1,9 k req/s : le test de débit mesure donc surtout le backend et le générateur, pas le plafond des gateways.
 * Une seule exécution complète par cible (E4 : médiane de 3 séries). Pas d'intervalle de confiance : les écarts de quelques ms sont dans le bruit.
 * Édition comparées : uniquement les versions OSS. Les fonctions Enterprise (Kong Enterprise, Traefik Hub) ne sont pas évaluées.
+* Les résultats chiffrés de `results/` ont été mesurés **avant** l'ajout du site (routes `/` et `/auth`) ; le catalogue y contenait des données génériques.
 * Non testés : Kubernetes, haute disponibilité de la gateway elle-même, TLS/CORS/requêtes malformées, traces distribuées, mise à jour à chaud d'une route (voir `docs/FICHES_EXPERIENCES.md`).

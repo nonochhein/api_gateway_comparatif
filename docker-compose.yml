@@ -18,6 +18,11 @@ services:
   orders-2:
     <<: *backend
     environment: {SERVICE_NAME: orders, INSTANCE: orders-2}
+  front:
+    image: nginx:1.27-alpine        # site Ammu-Nation (statique), exposé uniquement via la gateway
+    volumes: ["./frontend:/usr/share/nginx/html:ro"]
+    cpus: 0.25
+    mem_limit: 64m
   auth:
     image: python:3.12-alpine
     command: ["python", "/app/auth.py"]
@@ -41,7 +46,7 @@ services:
     ports: ["8000:8000", "8001:8001"]
     cpus: 1.0
     mem_limit: 512m
-    depends_on: [catalog, orders-1, orders-2]
+    depends_on: [catalog, orders-1, orders-2, auth, front]
 
   apisix:
     profiles: ["apisix"]
@@ -52,7 +57,7 @@ services:
     ports: ["9080:9080"]
     cpus: 1.0
     mem_limit: 512m
-    depends_on: [catalog, orders-1, orders-2]
+    depends_on: [catalog, orders-1, orders-2, auth, front]
 
   traefik:
     profiles: ["traefik"]
@@ -69,4 +74,4 @@ services:
     ports: ["8088:8088"]
     cpus: 1.0
     mem_limit: 512m
-    depends_on: [catalog, orders-1, orders-2, auth]
+    depends_on: [catalog, orders-1, orders-2, auth, front]

@@ -11,6 +11,12 @@ upstreams:
     nodes: {"catalog:8080": 1}
     retries: 2
     timeout: {connect: 1, send: 5, read: 5}
+  - id: front
+    type: roundrobin
+    nodes: {"front:80": 1}
+  - id: auth
+    type: roundrobin
+    nodes: {"auth:8080": 1}
   - id: orders
     type: roundrobin
     nodes: {"orders-1:8080": 1, "orders-2:8080": 1}
@@ -21,6 +27,16 @@ global_rules:
     plugins:
       request-id: {header_name: X-Request-Id, include_in_response: true}
 routes:
+  - id: front
+    uri: /*
+    priority: -10
+    upstream_id: front
+  - id: auth
+    uri: /auth/*
+    upstream_id: auth
+    plugins:
+      proxy-rewrite:
+        regex_uri: ["^/auth/(.*)", "/$1"]
   - id: catalog
     uri: /api/catalog*
     upstream_id: catalog
