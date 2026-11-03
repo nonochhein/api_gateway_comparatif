@@ -4,51 +4,68 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ammu-Nation — Los Santos</title>
+<meta name="description" content="Boutique fictive inspirée de GTA V. Projet pédagogique API Gateway.">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <header class="top">
-  <div class="logo">AMMU-NATION</div>
-  <nav><a href="#catalogue">Catalogue</a><a href="#gateway">Gateway</a></nav>
-  <div class="actions">
-    <span id="who" class="who"></span>
-    <button id="login" class="btn ghost">Connexion SSO</button>
-    <button id="cartBtn" class="btn">Panier (<span id="cartCount">0</span>)</button>
+  <div class="top-in">
+    <a class="logo" href="/"><b>AMMU-NATION</b><small>Los Santos<br>Since 1992</small></a>
+    <nav><a href="#catalogue">Catalogue</a><a href="#gateway">Gateway</a></nav>
+    <div class="actions">
+      <span id="who" class="who"></span>
+      <button id="login" class="btn ghost">Connexion SSO</button>
+      <button id="cartBtn" class="btn">Panier<span class="badge" id="cartCount">0</span></button>
+    </div>
   </div>
 </header>
 
 <section class="hero">
-  <h1>L'arsenal de Los Santos</h1>
-  <p>Boutique fictive inspirée de GTA V — aucune vente réelle. Projet pédagogique : API Gateway.</p>
+  <div class="hero-in">
+    <span class="tag">Los Santos · Ouvert 24/7</span>
+    <h1>L'arsenal de <em>Los Santos</em></h1>
+    <p>Boutique fictive inspirée de GTA V. Aucune vente réelle : un projet pédagogique pour tester une API Gateway devant un vrai backend.</p>
+    <div class="cta"><a class="btn" href="#catalogue" style="text-decoration:none;display:inline-block">Voir le catalogue</a></div>
+    <div class="stats">
+      <div><b id="statCount">—</b><span>armes au catalogue</span></div>
+      <div><b>GTA$</b><span>paiement en dollars virtuels</span></div>
+      <div><b>0</b><span>vente réelle</span></div>
+    </div>
+  </div>
 </section>
 
 <main id="catalogue">
+  <div class="section-title"><h2>Catalogue</h2><span class="count" id="countInfo"></span></div>
   <div class="tools">
-    <input id="search" type="search" placeholder="Rechercher une arme…" aria-label="Rechercher">
+    <input id="search" type="search" placeholder="Rechercher une arme…" aria-label="Rechercher une arme">
     <div class="filters" id="filters"></div>
   </div>
-  <div id="grid" class="grid"><p class="muted">Chargement du catalogue…</p></div>
-  <div class="pager"><button id="prev" class="btn ghost">‹</button><span id="pageInfo" class="muted"></span><button id="next" class="btn ghost">›</button></div>
+  <div id="grid" class="grid"></div>
+  <div class="pager"><button id="prev" class="btn ghost">‹ Précédent</button><span id="pageInfo" class="count"></span><button id="next" class="btn ghost">Suivant ›</button></div>
 </main>
 
-<aside id="cart" class="cart hidden">
-  <div class="cart-head"><h2>Votre panier</h2><button id="closeCart" class="btn ghost">✕</button></div>
+<div id="veil" class="veil hidden"></div>
+<aside id="cart" class="cart hidden" aria-label="Panier">
+  <div class="cart-head"><h2>Votre panier</h2><button id="closeCart" class="btn ghost" style="color:#000;border-color:#000" aria-label="Fermer">✕</button></div>
   <ul id="cartItems"></ul>
-  <div>Total : <strong id="cartTotal">GTA$ 0</strong></div>
+  <div class="total"><span>Total</span><span id="cartTotal">GTA$ 0</span></div>
   <button id="checkout" class="btn block">Commander</button>
   <p id="orderMsg" class="msg"></p>
 </aside>
 
 <section id="gateway" class="gw">
-  <h2>Console API Gateway</h2>
-  <p class="muted">Chaque appel du site passe par Kong : catalogue public ; commandes protégées (jeton du SSO), quota 30 req/s.</p>
-  <table>
-    <thead><tr><th>Heure</th><th>Requête</th><th>Statut</th><th>X-Request-Id</th></tr></thead>
-    <tbody id="log"></tbody>
-  </table>
+  <div class="box">
+    <h2>Console API Gateway</h2>
+    <p>Chaque appel du site passe par Kong : catalogue public ; commandes protégées par un jeton du SSO, quota 30 req/s.</p>
+    <table>
+      <thead><tr><th>Heure</th><th>Requête</th><th>Statut</th><th>X-Request-Id</th></tr></thead>
+      <tbody id="log"></tbody>
+    </table>
+  </div>
 </section>
 
-<footer>Ammu-Nation (parodie). Univers GTA V © Rockstar Games — site de démonstration sans lien officiel.</footer>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<footer><b>Ammu-Nation</b> — parodie. Univers GTA V © Rockstar Games. Site de démonstration sans lien officiel ; aucune arme n'est vendue.</footer>
 <script src="/app.js"></script>
 </body>
 </html>

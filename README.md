@@ -24,6 +24,13 @@ Il utilise les vrais formats du backend : `GET /api/products` (page), `GET /api/
 Ouvrir `http://localhost:8000`. Commander demande un jeton du SSO : le SSO n'existant pas encore, le bouton « Connexion SSO » accepte un JWT collé à la main.
 Une console en bas de page affiche statut et `X-Request-Id` de chaque appel.
 
+Curseur : **poing fermé** en navigation, **doigt d'honneur 8 bit** au clic (le curseur change 0,45 s et un petit sprite jaillit, y compris au tactile).
+Les curseurs sont générés par `python3 scripts/make_cursors.py` (PNG 32×32 en pixel art, modifiables dans le script).
+
+Photos : le site affiche des silhouettes dessinées par défaut. Pour mettre de vraies photos, déposer les fichiers dans `frontend/images/photos/` et les lister dans
+`frontend/images/photos/manifest.json` sous la forme `{"GTA-PISTOL": "pistol.jpg", "GTA-SNIPER": "sniper.jpg"}` (clé = `sku` du produit). Aucun autre changement n'est nécessaire.
+Vérifier le droit d'utiliser chaque image (pour un travail scolaire, citer la source).
+
 ### Armes du jeu dans la base
 
 `db/gta-weapons.sql` ajoute 7 catégories et 28 armes (prix inspirés du jeu, approximatifs). Il est **rejouable** : il ne supprime rien (les 4 produits d'origine `AMMU-001..004` sont seulement désactivés)
