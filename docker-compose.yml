@@ -12,7 +12,7 @@ services:
       KONG_STATUS_LISTEN: 0.0.0.0:8100
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
-    volumes: ["./kong/kong.yml:/kong/kong.yml:ro"]
+    volumes: ["${KONG_CONFIG:-./kong/kong.yml}:/kong/kong.yml:ro"]
     ports: ["8000:8000"]                      # point d'entrée unique
     networks: [backend]
     healthcheck:

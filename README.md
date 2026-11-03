@@ -4,8 +4,9 @@ Point d'entrée unique devant les microservices Spring Boot du backend
 ([`tp-cesi-ammu-nation-backend-kafka`](https://github.com/hubhed16/tp-cesi-ammu-nation-backend-kafka)) :
 `catalog-service` et `order-service`.
 
-**Authentification : gérée par le SSO, pas par la gateway.** Kong ne vérifie aucun jeton et transmet l'en-tête
-`Authorization` tel quel au backend (vérifié par les tests). C'est donc au backend (ou à un filtre branché sur le SSO) de refuser un jeton invalide.
+**Authentification : deux SSO en même temps, Authentik et Authelia.** Kong valide la signature (RS256) et l'expiration des jetons JWT
+des deux SSO sur les mêmes routes. Un « consommateur » Kong par SSO (`sso-authentik`, `sso-authelia`) ; Kong ajoute l'en-tête
+`X-Consumer-Username` et transmet `Authorization` tel quel au backend, qui sait ainsi quel SSO a émis le jeton.
 
 **Kafka** : le broker est utilisé entre services sur le réseau interne ; il n'est pas exposé par la gateway (Kong route du HTTP, pas le protocole Kafka).
 
@@ -18,13 +19,31 @@ Point d'entrée unique devant les microservices Spring Boot du backend
 
 | Chemin | Méthodes | Politique appliquée |
 |---|---|---|
-| `/api/products`, `/api/categories` | toutes | 50 req/s par IP |
-| `/api/orders` (et `/{id}`, `/{id}/confirm`…) | toutes | 30 req/s par IP, corps ≤ 1 Mo |
+| `/api/products`, `/api/categories` | GET, HEAD, OPTIONS | public, 50 req/s par IP |
+| `/api/products`, `/api/categories` | POST, PUT, PATCH, DELETE | **jeton d'un des 2 SSO**, 20 req/s par utilisateur |
+| `/api/orders` (et `/{id}`, `/{id}/confirm`…) | toutes | **jeton d'un des 2 SSO**, 30 req/s par utilisateur, corps ≤ 1 Mo |
 | `/internal/*`, `/actuator/*` | toutes | **403** : API interne (réservations) et supervision jamais exposées |
 | tout le reste | — | 404 |
 
-Transverse : `X-Request-Id` (corrélation, renvoyé au client), CORS (origines `*` en dev), timeout de connexion 1 s, 2 tentatives.
+Transverse : `X-Request-Id` (corrélation), CORS (origines `*` en dev, préflight sans jeton), timeout de connexion 1 s, 2 tentatives.
 Swagger (`/swagger-ui`, `/v3/api-docs`) n'est volontairement pas routé.
+
+## Brancher les deux SSO (à faire : les clés de `kong/kong.yml` sont des clés de démo)
+
+Pour **chaque** SSO, deux valeurs à mettre dans `consumers:` de `kong/kong.yml` :
+1. `key` = valeur exacte de la claim `iss` de ses jetons (décoder un jeton sur jwt.io, ou lire le champ `issuer` de son `/.well-known/openid-configuration`).
+2. `rsa_public_key` = sa clé publique de signature, obtenue avec le script :
+```bash
+python3 scripts/jwks_to_pem.py https://<authentik>/application/o/<slug>/jwks/   # Authentik
+python3 scripts/jwks_to_pem.py https://<authelia>/jwks.json                      # Authelia
+```
+Puis `docker compose restart kong`.
+
+Points d'attention :
+* **Rotation des clés** : Kong OSS ne relit pas le JWKS. Après une rotation de clé du SSO, refaire la commande et redémarrer Kong.
+* **Authelia** : ses jetons d'accès sont opaques par défaut ; Kong ne sait valider que des JWT. Il faut configurer le client OIDC pour émettre des jetons d'accès JWT, ou envoyer l'ID token. Je ne l'ai pas vérifié sur une vraie instance.
+* **Algorithme** : RS256 uniquement (ES256 ou EdDSA seraient à ajouter à la config).
+* **Audience (`aud`)** : non vérifiée. Un jeton valide d'une autre application du même SSO passerait.
 
 ## Lancer
 
@@ -44,27 +63,27 @@ Entrée unique : `http://localhost:8000`.
 ## Essayer
 
 ```bash
-curl -i localhost:8000/api/products                                          # 200
-curl -i -H "Authorization: Bearer <jeton du SSO>" localhost:8000/api/orders  # transmis au backend
+curl -i localhost:8000/api/products                                          # 200, public
+curl -i localhost:8000/api/orders                                            # 401, pas de jeton
+curl -i -H "Authorization: Bearer <jeton du SSO>" localhost:8000/api/orders   # 200 si jeton valide
 curl -i localhost:8000/actuator/health                                       # 403, bloqué
 ```
 
-Tests automatiques (routes, 403/404, CORS, `X-Request-Id`, quota) :
+Tests automatiques :
 ```bash
-tests/smoke.sh                 # contre le vrai backend lancé
-tests/run-with-mocks.sh        # sans backend : faux services + Kong
+tests/run-with-mocks.sh        # sans backend ni SSO : faux services + 2 fausses paires de clés RSA (24 vérifications)
+TOKEN_AUTHENTIK=<jeton> TOKEN_AUTHELIA=<jeton> tests/smoke.sh   # contre le vrai backend et les vrais SSO
 ```
 
 ## Sécurité : à savoir
 
-* Sans authentification côté gateway, **tout** ce qui est exposé dépend du SSO et du backend : tant que le backend ne vérifie pas les jetons, `/api/orders` et l'écriture du catalogue sont ouverts.
-* Les quotas sont par IP (pas de notion d'utilisateur à la gateway) et locaux à une instance Kong.
-* L'API d'administration de Kong n'est pas exposée hors du conteneur. CORS `*` est à restreindre à l'origine du front.
+* Le backend n'a pas d'authentification : **la gateway est la seule barrière**. Ne jamais exposer `catalog-service` / `order-service` directement (ports 8081/8082 du compose backend liés à `127.0.0.1` : à conserver).
+* Les quotas sont locaux à une instance Kong. L'API d'administration de Kong n'est pas exposée hors du conteneur. CORS `*` est à restreindre.
 
 ## Limites de la validation
 
-La configuration a été validée avec de **faux services** reprenant les chemins et codes HTTP du backend lus dans les contrôleurs.
-Elle n'a **pas** encore été exécutée contre le vrai backend Java : à confirmer avec `tests/smoke.sh` une fois le backend lancé
+La configuration a été validée avec de **faux services** (chemins et codes HTTP lus dans les contrôleurs du backend) et de **fausses clés RSA** simulant les deux SSO.
+Elle n'a **pas** encore été exécutée contre le vrai backend Java ni contre de vraies instances Authentik / Authelia : à confirmer avec `tests/smoke.sh` une fois les deux lancés
 (les tests de création produit/commande supposent que le backend accepte le corps envoyé ; en cas de 400, adapter les JSON de `tests/smoke.sh`).
 Kafka (présent dans le nom du dépôt) n'apparaît pas dans le code : rien à router côté gateway.
 

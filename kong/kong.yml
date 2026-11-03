@@ -1,6 +1,39 @@
 # Gateway Kong (DB-less) devant catalog-service et order-service (Spring Boot).
-# Pas d'authentification ici : le SSO s'en charge. Kong transmet l'en-tête Authorization tel quel au backend.
+# Authentification : validation des JWT RS256 émis par DEUX SSO (Authentik et Authelia), en même temps.
+# Kong OSS ne récupère pas les clés tout seul (pas de JWKS) : voir "À remplacer" ci-dessous et scripts/jwks_to_pem.py.
 _format_version: "3.0"
+
+consumers:
+  # À REMPLACER : "key" = valeur exacte de la claim "iss" des jetons du SSO ; rsa_public_key = clé publique du SSO (PEM).
+  # Les clés ci-dessous sont des clés de DÉMO dont la clé privée a été détruite : aucun jeton réel ne sera accepté tant qu'elles ne sont pas remplacées.
+  - username: sso-authentik
+    jwt_secrets:
+      - algorithm: RS256
+        key: "https://authentik.example.com/application/o/ammu-nation/"
+        rsa_public_key: |
+          -----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArLAw+OVP6PGh5BquzLrB
+          YCcKta1edOCycNb5cE3Pru3cZVQkTq+O8WuS1n5Z6wD812J/gEbhNGj/t4Vn4Sjs
+          /oppQ6VvFPVzm8/pJ0GzTDb94d21SncwPIz/EIe0gr0bDCnlRyTNBouS3Fp8Q5cQ
+          GUTYOx3cetFr9vD+QHmavLmIx9uHmRZeq/x1Opcri2PWhkrbaNRXczIbXP68bF6P
+          C+Yft3dJgeTTuod8ipfuKF6a2tFW3+e30X6B/ics++13uCDgyfdDh+q6VKd83dpS
+          Ng4Pd5cZ/uC+gUyRo5a7ik7sI3TQxHUxdjQfZQ7QtVoJ82GRWO5RJynorFoiKgkH
+          IQIDAQAB
+          -----END PUBLIC KEY-----
+  - username: sso-authelia
+    jwt_secrets:
+      - algorithm: RS256
+        key: "https://auth.example.com"
+        rsa_public_key: |
+          -----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA32bD9y3XKAjwgGtoJMCe
+          XbXyJwiPqLskU3RIYvLG0+ehHt1B/XLbO/EhFiq4TuuP6iVk3MuKlIRRxWirZFwp
+          M9KTmXwzAqCsHWbr7kX2FTg2OVh/wnKPets4hE2LF8siyNi2XyzRr3p7InSluPF+
+          9oraayPDrftRUYOf861czJsUy1dLSncKsVnSdcT4pJrYkYXv0o2hL2olL3r4YOiW
+          QqvLAKq58bPPa0eeEjv7vERPUfeTGnJwsgEFsXvRgvVBHs0g/vJliW6o0MrHz9E7
+          RqXtfRUPVSyjV+R9936ME1dfWD9r31iFJNxwqpChXxRD5zj3ZCjVjRIqZuN7cKUB
+          uQIDAQAB
+          -----END PUBLIC KEY-----
 
 services:
   - name: catalog-service
@@ -9,12 +42,24 @@ services:
     read_timeout: 10000
     retries: 2
     routes:
-      - name: catalog
+      # Lecture publique du catalogue
+      - name: catalog-read
         paths: ["/api/products", "/api/categories"]
+        methods: [GET, HEAD, OPTIONS]
         strip_path: false
         plugins:
           - name: rate-limiting
             config: {second: 50, policy: local, limit_by: ip, error_code: 429}
+      # Écriture du catalogue : jeton d'un des deux SSO obligatoire
+      - name: catalog-write
+        paths: ["/api/products", "/api/categories"]
+        methods: [POST, PUT, PATCH, DELETE]
+        strip_path: false
+        plugins:
+          - name: jwt
+            config: {claims_to_verify: [exp]}
+          - name: rate-limiting
+            config: {second: 20, policy: local, limit_by: consumer, error_code: 429}
       # API interne (réservations) et supervision : jamais exposées à l'extérieur
       - name: blocked-internal
         paths: ["/internal", "/actuator"]
@@ -33,8 +78,10 @@ services:
         paths: ["/api/orders"]
         strip_path: false
         plugins:
+          - name: jwt
+            config: {claims_to_verify: [exp]}
           - name: rate-limiting
-            config: {second: 30, policy: local, limit_by: ip, error_code: 429}
+            config: {second: 30, policy: local, limit_by: consumer, error_code: 429}
           - name: request-size-limiting
             config: {allowed_payload_size: 1, size_unit: megabytes}
 
@@ -43,7 +90,7 @@ plugins:
     config: {header_name: X-Request-Id, generator: uuid, echo_downstream: true}
   - name: cors
     config:
-      origins: ["*"]          # dev : restreindre à l'origine du front / du SSO en production
+      origins: ["*"]          # dev : restreindre à l'origine du front / des SSO en production
       methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
       headers: [Authorization, Content-Type, X-Request-Id]
       exposed_headers: [X-Request-Id]
