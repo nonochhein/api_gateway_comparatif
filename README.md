@@ -15,10 +15,32 @@ des deux SSO sur les mêmes routes. Un « consommateur » Kong par SSO (`sso-aut
                                  └─► order-service   :8080  (/api/orders)
 ```
 
+## Site Ammu-Nation (front) et données
+
+Le site (`frontend/`, HTML/CSS/JS, servi par nginx **derrière Kong**) imite la boutique d'armes d'Ammu-Nation de GTA V : charte rouge / blanc / noir,
+curseur « doigt d'honneur » parodique, catalogue paginé avec filtres, recherche, panier et commande. **Aucune vente réelle** ; les images sont des silhouettes dessinées pour le projet (pas d'assets de Rockstar).
+Il utilise les vrais formats du backend : `GET /api/products` (page), `GET /api/categories`, `POST /api/orders` `{userId, items:[{productId, quantity}]}`.
+
+Ouvrir `http://localhost:8000`. Commander demande un jeton du SSO : le SSO n'existant pas encore, le bouton « Connexion SSO » accepte un JWT collé à la main.
+Une console en bas de page affiche statut et `X-Request-Id` de chaque appel.
+
+### Armes du jeu dans la base
+
+`db/gta-weapons.sql` ajoute 7 catégories et 28 armes (prix inspirés du jeu, approximatifs). Il est **rejouable** : il ne supprime rien (les 4 produits d'origine `AMMU-001..004` sont seulement désactivés)
+et ne touche pas au stock d'un produit déjà présent. À lancer depuis le dossier du **backend**, une fois ses conteneurs démarrés :
+
+```bash
+docker compose exec -T catalog-db psql -U catalog -d catalog < ../api_gateway_comparatif/db/gta-weapons.sql
+```
+
+Ce script modifie la base locale en cours d'exécution, pas le dépôt du backend : après un `docker compose down -v`, la base repart du seed d'origine et il faut le rejouer.
+Pour le rendre permanent, il faudrait en faire une migration Flyway (`V4__…sql`) dans le dépôt du backend, ce que je n'ai pas fait.
+
 ## Routes exposées
 
 | Chemin | Méthodes | Politique appliquée |
 |---|---|---|
+| `/` (site), `/images/*` | GET | public, fichiers statiques |
 | `/api/products`, `/api/categories` | GET, HEAD, OPTIONS | public, 50 req/s par IP |
 | `/api/products`, `/api/categories` | POST, PUT, PATCH, DELETE | **jeton d'un des 2 SSO**, 20 req/s par utilisateur |
 | `/api/orders` (et `/{id}`, `/{id}/confirm`…) | toutes | **jeton d'un des 2 SSO**, 30 req/s par utilisateur, corps ≤ 1 Mo |
@@ -71,8 +93,9 @@ curl -i localhost:8000/actuator/health                                       # 4
 
 Tests automatiques :
 ```bash
-tests/run-with-mocks.sh        # sans backend ni SSO : faux services + 2 fausses paires de clés RSA (24 vérifications)
-TOKEN_AUTHENTIK=<jeton> TOKEN_AUTHELIA=<jeton> tests/smoke.sh   # contre le vrai backend et les vrais SSO
+tests/run-with-mocks.sh        # sans backend ni SSO : faux services (alimentés par db/gta-weapons.sql) + 2 fausses paires de clés RSA
+TOKEN_AUTHENTIK=<jeton> TOKEN_AUTHELIA=<jeton> tests/smoke.sh   # vrai backend et vrais SSO : crée puis annule une commande,
+                                                                 # crée puis désactive un produit « SMOKE-… » (reste en base, inactif)
 ```
 
 ## Sécurité : à savoir

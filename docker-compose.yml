@@ -14,12 +14,19 @@ services:
       KONG_PROXY_ERROR_LOG: /dev/stderr
     volumes: ["${KONG_CONFIG:-./kong/kong.yml}:/kong/kong.yml:ro"]
     ports: ["8000:8000"]                      # point d'entrée unique
-    networks: [backend]
+    networks: [backend, default]
+    depends_on: [front]
     healthcheck:
       test: ["CMD", "kong", "health"]
       interval: 10s
       timeout: 5s
       retries: 6
+    restart: unless-stopped
+
+  front:
+    image: nginx:1.27-alpine        # site Ammu-Nation (statique), joignable uniquement via Kong
+    volumes: ["./frontend:/usr/share/nginx/html:ro"]
+    networks: [default]
     restart: unless-stopped
 
 networks:

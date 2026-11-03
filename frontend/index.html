@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ammu-Nation — Los Santos</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="logo">AMMU-NATION</div>
+  <nav><a href="#catalogue">Catalogue</a><a href="#gateway">Gateway</a></nav>
+  <div class="actions">
+    <span id="who" class="who"></span>
+    <button id="login" class="btn ghost">Connexion SSO</button>
+    <button id="cartBtn" class="btn">Panier (<span id="cartCount">0</span>)</button>
+  </div>
+</header>
+
+<section class="hero">
+  <h1>L'arsenal de Los Santos</h1>
+  <p>Boutique fictive inspirée de GTA V — aucune vente réelle. Projet pédagogique : API Gateway.</p>
+</section>
+
+<main id="catalogue">
+  <div class="tools">
+    <input id="search" type="search" placeholder="Rechercher une arme…" aria-label="Rechercher">
+    <div class="filters" id="filters"></div>
+  </div>
+  <div id="grid" class="grid"><p class="muted">Chargement du catalogue…</p></div>
+  <div class="pager"><button id="prev" class="btn ghost">‹</button><span id="pageInfo" class="muted"></span><button id="next" class="btn ghost">›</button></div>
+</main>
+
+<aside id="cart" class="cart hidden">
+  <div class="cart-head"><h2>Votre panier</h2><button id="closeCart" class="btn ghost">✕</button></div>
+  <ul id="cartItems"></ul>
+  <div>Total : <strong id="cartTotal">GTA$ 0</strong></div>
+  <button id="checkout" class="btn block">Commander</button>
+  <p id="orderMsg" class="msg"></p>
+</aside>
+
+<section id="gateway" class="gw">
+  <h2>Console API Gateway</h2>
+  <p class="muted">Chaque appel du site passe par Kong : catalogue public ; commandes protégées (jeton du SSO), quota 30 req/s.</p>
+  <table>
+    <thead><tr><th>Heure</th><th>Requête</th><th>Statut</th><th>X-Request-Id</th></tr></thead>
+    <tbody id="log"></tbody>
+  </table>
+</section>
+
+<footer>Ammu-Nation (parodie). Univers GTA V © Rockstar Games — site de démonstration sans lien officiel.</footer>
+<script src="/app.js"></script>
+</body>
+</html>

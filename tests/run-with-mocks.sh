@@ -29,7 +29,7 @@ docker network create $NET >/dev/null 2>&1 || true
 for s in catalog order; do
   docker rm -f mock-$s >/dev/null 2>&1 || true
   docker run -d --name mock-$s --network $NET --network-alias $s-service -e SERVICE=$s \
-    -v "$PWD/tests/mock/app.py:/app.py:ro" python:3.12-alpine python /app.py >/dev/null
+    -v "$PWD/tests/mock/app.py:/app.py:ro" -v "$PWD/db:/db:ro" python:3.12-alpine python /app.py >/dev/null
 done
 export BACKEND_NETWORK=$NET KONG_CONFIG=$TMP/kong.yml
 docker compose up -d --force-recreate >/dev/null 2>&1

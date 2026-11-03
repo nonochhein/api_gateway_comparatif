@@ -10,7 +10,14 @@ t() { # description attendu méthode chemin [en-tête] [corps]
   if [ "$code" = "$exp" ]; then echo "PASS  $desc ($code)"; else echo "FAIL  $desc : attendu $exp, reçu $code"; fail=1; fi
 }
 bearer() { echo "Authorization: Bearer $1"; }
-ORD='{"items":[{"productId":1,"quantity":1}]}'
+# Id d'un produit réel (lu via la gateway) : le backend exige des UUID
+FIRST=$(curl -s "$GW/api/products?size=1&active=true")
+PID=$(echo "$FIRST" | python3 -c 'import sys,json;print(json.load(sys.stdin)["content"][0]["id"])' 2>/dev/null)
+CID=$(echo "$FIRST" | python3 -c 'import sys,json;print(json.load(sys.stdin)["content"][0]["categoryId"])' 2>/dev/null)
+jid() { python3 -c 'import sys,json;print(json.load(sys.stdin).get("id",""))' 2>/dev/null; }
+ok2xx() { case "$2" in 2??) echo "PASS  $1 ($2)";; *) echo "FAIL  $1 : attendu 2xx, reçu $2"; fail=1;; esac; }
+t "site (page d'accueil)"               200 GET    /
+t "site (image d'arme)"                200 GET    /images/pistol.svg
 t "catalogue public (produits)"            200 GET    /api/products
 t "catalogue public (catégories)"          200 GET    /api/categories
 t "création produit sans jeton"            401 POST   /api/products "" '{"name":"x"}'
@@ -23,9 +30,19 @@ t "jeton illisible"                        401 GET    /api/orders "Authorization
 for sso in AUTHENTIK AUTHELIA; do
   v=TOKEN_$sso; tok=${!v}
   if [ -n "$tok" ]; then
-    t "[$sso] commandes (liste)"           200 GET  /api/orders "$(bearer "$tok")"
-    t "[$sso] création commande"           201 POST /api/orders "$(bearer "$tok")" "$ORD"
-    t "[$sso] création produit"            201 POST /api/products "$(bearer "$tok")" '{"name":"x"}'
+    H="$(bearer "$tok")"
+    t "[$sso] commandes (liste)"           200 GET  /api/orders "$H"
+    # Commande réelle puis annulation (libère la réservation de stock)
+    r=$(curl -s -w '\n%{http_code}' -X POST -H "$H" -H 'Content-Type: application/json' -d "{\"userId\":\"smoke-$sso\",\"items\":[{\"productId\":\"$PID\",\"quantity\":1}]}" "$GW/api/orders")
+    code=${r##*$'\n'}; oid=$(echo "${r%$'\n'*}" | jid)
+    ok2xx "[$sso] création commande" "$code"
+    [ -n "$oid" ] && ok2xx "[$sso] annulation de la commande" "$(curl -s -o /dev/null -w '%{http_code}' -X POST -H "$H" "$GW/api/orders/$oid/cancel")"
+    # Produit de test créé puis désactivé (la ligne reste en base, inactive)
+    sku="SMOKE-$sso-$(date +%s)"
+    r=$(curl -s -w '\n%{http_code}' -X POST -H "$H" -H 'Content-Type: application/json' -d "{\"categoryId\":\"$CID\",\"sku\":\"$sku\",\"name\":\"Test $sso\",\"description\":\"smoke\",\"price\":1.00,\"stockQuantity\":1,\"imageUrl\":null,\"active\":true}" "$GW/api/products")
+    code=${r##*$'\n'}; pid2=$(echo "${r%$'\n'*}" | jid)
+    ok2xx "[$sso] création produit" "$code"
+    [ -n "$pid2" ] && ok2xx "[$sso] désactivation du produit de test" "$(curl -s -o /dev/null -w '%{http_code}' -X DELETE -H "$H" "$GW/api/products/$pid2")"
   else echo "SKIP  [$sso] pas de jeton fourni ($v)"; fi
 done
 t "API interne bloquée"                    403 PUT    /internal/reservations/1 "" '{}'

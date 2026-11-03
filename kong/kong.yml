@@ -36,6 +36,12 @@ consumers:
           -----END PUBLIC KEY-----
 
 services:
+  # Site Ammu-Nation (fichiers statiques). Chemin le plus court => priorité la plus basse : /api/* l'emporte.
+  - name: front
+    url: http://front:80
+    routes:
+      - {name: front, paths: ["/"], strip_path: false}
+
   - name: catalog-service
     url: http://catalog-service:8080
     connect_timeout: 1000
