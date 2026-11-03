@@ -4,17 +4,19 @@
 
 Point d'entrée unique devant les microservices Spring Boot du backend
 ([`tp-cesi-ammu-nation-backend-kafka`](https://github.com/hubhed16/tp-cesi-ammu-nation-backend-kafka)) :
-`catalog-service` et `order-service`.
+`catalog-service`, `order-service` et `notification-service` (branche `notification-service` du backend, avec Kafka).
 
 **Authentification : deux SSO en même temps, Authentik et Authelia.** Kong valide la signature (RS256) et l'expiration des jetons JWT
 des deux SSO sur les mêmes routes. Un « consommateur » Kong par SSO (`sso-authentik`, `sso-authelia`) ; Kong ajoute l'en-tête
 `X-Consumer-Username` et transmet `Authorization` tel quel au backend, qui sait ainsi quel SSO a émis le jeton.
 
-**Kafka** : le broker est utilisé entre services sur le réseau interne ; il n'est pas exposé par la gateway (Kong route du HTTP, pas le protocole Kafka).
+**Kafka** : order-service publie les changements d'état des commandes (`orders.events.v1`, Avro) ; notification-service les consomme et les expose en HTTP.
+Le broker reste sur le réseau interne : Kong route du HTTP, pas le protocole Kafka. Le site lit donc les notifications via `GET /api/notifications`.
 
 ```
  front / client ──► Kong :8000 ──┬─► catalog-service :8080  (/api/products, /api/categories)
-                                 └─► order-service   :8080  (/api/orders)
+                                 ├─► order-service   :8080  (/api/orders) ──► Kafka orders.events.v1
+                                 └─► notification-service :8080 (/api/notifications) ◄──┘
 ```
 
 ## Site Ammu-Nation (front) et données
@@ -32,6 +34,8 @@ Les curseurs sont générés par `python3 scripts/make_cursors.py` (PNG 32×32 e
 
 **Mes commandes** (connecté) : liste des commandes de l'utilisateur du jeton (`GET /api/orders?userId=…`), filtre par statut, détail des lignes, actions *Confirmer et réserver* (`/confirm`, réserve le stock), *Marquer comme livrée* (`/complete`), *Annuler* (`/cancel`, libère le stock) et *Commander à nouveau* (remet les armes encore disponibles dans le panier via `GET /api/products/{id}`).
 Le backend ne vérifie pas que la commande appartient bien à l'utilisateur du jeton : le filtre `userId` est fait côté site.
+
+**Notifications** (connecté) : cloche dans l'en-tête avec le nombre de non lues ; le site interroge `GET /api/notifications?userId=…` toutes les 5 s (30 s si l'onglet est masqué, appels non tracés dans la console), affiche une notification à chaque nouvel événement Kafka et marque comme lu (`POST /api/notifications/{id}/read`). Même limite que les commandes : `userId` n'est pas contrôlé par le backend.
 
 Autres fonctions du site : fiche produit au clic sur l'image ou le nom (choix de la quantité), panier conservé dans le navigateur (`localStorage`) avec bouton « Vider », raccourci `/` pour la recherche, `Échap` pour fermer, bouton de retour en haut, console gateway effaçable.
 
@@ -60,6 +64,7 @@ Pour le rendre permanent, il faudrait en faire une migration Flyway (`V4__…sql
 | `/api/products`, `/api/categories` | GET, HEAD, OPTIONS | public, 50 req/s par IP |
 | `/api/products`, `/api/categories` | POST, PUT, PATCH, DELETE | **jeton d'un des 2 SSO**, 20 req/s par utilisateur |
 | `/api/orders` (et `/{id}`, `/{id}/confirm`…) | toutes | **jeton d'un des 2 SSO**, 30 req/s par utilisateur, corps ≤ 1 Mo |
+| `/api/notifications` (et `/{id}`, `/{id}/read`) | GET, POST | **jeton d'un des 2 SSO**, 20 req/s par utilisateur, corps ≤ 1 Ko |
 | `/internal/*`, `/actuator/*` | toutes | **403** : API interne (réservations) et supervision jamais exposées |
 | tout le reste | — | 404 |
 

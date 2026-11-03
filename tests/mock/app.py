@@ -1,10 +1,12 @@
 """Faux services Spring pour tester la gateway sans le backend Java : mêmes chemins, mêmes codes HTTP attendus.
-SERVICE=catalog|order. Ne sert qu'à valider la configuration Kong."""
+SERVICE=catalog|order|notification. Ne sert qu'à valider la configuration Kong."""
 import datetime, json, os, re, uuid, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 SERVICE = os.environ.get("SERVICE", "catalog")
 ORDERS = {}   # commandes créées pendant la vie du mock (id -> commande), plus récente en dernier
+NOTIFS = []   # notifications (comme notification-service) : remplies par les transitions quand tout tourne dans un seul process
+EVENT = {"CONFIRMED": "OrderConfirmed", "CANCELLED": "OrderCancelled", "COMPLETED": "OrderCompleted"}
 MOVES = {"confirm": ({"PENDING"}, "CONFIRMED"), "cancel": ({"PENDING", "CONFIRMED"}, "CANCELLED"), "complete": ({"CONFIRMED"}, "COMPLETED")}
 NS = uuid.UUID("00000000-0000-4000-8000-000000000000")
 
@@ -71,6 +73,9 @@ class H(BaseHTTPRequestHandler):
                     if o["status"] not in allowed:
                         return self.reply(409, {"title": "Conflict", "detail": f"Transition {o['status']} -> {to} interdite"})
                     o["status"] = to
+                    now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+                    NOTIFS.insert(0, {"id": str(uuid.uuid4()), "eventId": str(uuid.uuid4()), "orderId": o["id"], "userId": o["userId"],
+                                      "type": EVENT[to], "message": "", "occurredAt": now, "createdAt": now, "readAt": None})
             return self.reply(200, o)
         if SERVICE == "order" and method == "GET" and path == "/api/orders":
             items = [o for o in reversed(ORDERS.values()) if (not q.get("userId") or o["userId"] == q["userId"][0])
@@ -94,7 +99,20 @@ class H(BaseHTTPRequestHandler):
                  "totalAmount": sum(i["lineTotal"] for i in its), "items": its, "createdAt": now, "updatedAt": now}
             ORDERS[o["id"]] = o
             return self.reply(201, o)
-        ok = {"catalog": ("/api/products", "/api/categories", "/internal/"), "order": ("/api/orders",)}[SERVICE]
+        if SERVICE == "notification" and method == "GET" and path == "/api/notifications":
+            items = [n for n in NOTIFS if not q.get("userId") or n["userId"] == q["userId"][0]]
+            size, pg = int(q.get("size", ["20"])[0]), int(q.get("page", ["0"])[0])
+            return self.reply(200, {"content": items[pg * size:(pg + 1) * size], "page": pg, "size": size,
+                                    "totalElements": len(items), "totalPages": max(1, -(-len(items) // size))})
+        m = re.fullmatch(r"/api/notifications/([0-9a-f-]{36})/read", path)
+        if SERVICE == "notification" and m and method == "POST":
+            n = next((n for n in NOTIFS if n["id"] == m.group(1)), None)
+            if not n:
+                return self.reply(404, {"title": "Not Found"})
+            n["readAt"] = n["readAt"] or datetime.datetime.now(datetime.timezone.utc).isoformat()
+            return self.reply(200, n)
+        ok = {"catalog": ("/api/products", "/api/categories", "/internal/"), "order": ("/api/orders",),
+              "notification": ("/api/notifications",)}[SERVICE]
         if not path.startswith(ok):
             return self.reply(404, {"title": "Not Found"})
         self.reply(201 if method == "POST" else 200, {"service": SERVICE, "method": method, "path": p, "authorization": self.headers.get("Authorization"), "consumer": self.headers.get("X-Consumer-Username")})

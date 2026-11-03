@@ -91,7 +91,7 @@ function refreshWho() {
   const u = userFromToken();
   $("who").textContent = u ? "● " + u : "";
   $("login").textContent = u ? "Log out" : "SSO login";
-  loadOrders();
+  loadOrders(); loadNotifs();
 }
 
 /* ---------- Appels API (tous via la gateway) + journal ---------- */
@@ -102,12 +102,12 @@ function trace(method, url, res) {
   $("log").prepend(tr);
   while ($("log").children.length > 12) $("log").lastChild.remove();
 }
-async function api(method, url, body) {
+async function api(method, url, body, quiet) {            // quiet : appel périodique, pas tracé dans la console
   const headers = {};
   if (token) headers.Authorization = "Bearer " + token;
   if (body) headers["Content-Type"] = "application/json";
   const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
-  trace(method, url, res);
+  if (!quiet || !res.ok) trace(method, url, res);
   return res;
 }
 const imgOf = (p) => (photos[p.sku] ? "/images/photos/" + photos[p.sku] : p.imageUrl || "/images/pistol.svg");
@@ -325,6 +325,7 @@ async function orderAction(o, action, btn) {
     Object.assign(o, body); renderOrders();
     toast({ confirm: "Order confirmed: stock reserved.", cancel: "Order cancelled.", complete: "Order delivered. Happy hunting." }[action]);
     if (action !== "complete") loadProducts();             // le stock du catalogue a bougé
+    setTimeout(loadNotifs, 2500);                          // l'événement part par l'outbox puis Kafka : on regarde un peu après
   } else {
     btn.disabled = false;
     if (res.status === 401) { token = null; refreshWho(); }
@@ -347,6 +348,61 @@ async function reorder(o) {
   if (!added) return toast("These weapons are no longer available.", true);
   toast(`${added} item${added !== 1 ? "s" : ""} put back in your cart`); openCart(true);
 }
+
+/* ---------- Notifications (notification-service, alimenté par Kafka) ---------- */
+const NOTIF = { OrderConfirmed: ["✅", "confirmed — stock reserved"], OrderCancelled: ["✖", "cancelled — stock released"],
+  OrderCompleted: ["📦", "delivered. Happy hunting."] };
+let notifs = [], notifSeen = null, notifTimer;
+const ago = (d) => {
+  const s = Math.max(0, (Date.now() - new Date(d)) / 1000);
+  return s < 60 ? "just now" : s < 3600 ? Math.floor(s / 60) + " min ago" : s < 86400 ? Math.floor(s / 3600) + " h ago" : new Date(d).toLocaleDateString("en-US");
+};
+const notifText = (n) => `Order #${String(n.orderId).slice(0, 8)} ${(NOTIF[n.type] || ["", n.type])[1]}`;
+async function loadNotifs() {
+  clearTimeout(notifTimer);
+  if (!token) { notifs = []; notifSeen = null; renderNotifs(); return; }
+  try {
+    const res = await api("GET", "/api/notifications?" + new URLSearchParams({ userId: userFromToken(), size: 20 }), null, notifSeen !== null);
+    if (res.ok) {
+      notifs = (await res.json()).content || [];
+      const fresh = notifSeen ? notifs.filter((n) => !notifSeen.has(n.id)) : [];
+      notifSeen = new Set(notifs.map((n) => n.id));
+      if (fresh.length) {                                   // un événement Kafka vient d'arriver
+        fresh.slice(0, 3).forEach((n) => toast("🔔 " + notifText(n)));
+        const b = $("notifBtn"); b.classList.remove("ring"); void b.offsetWidth; b.classList.add("ring");
+        loadOrders();
+      }
+      renderNotifs();
+    }
+  } catch (e) {}
+  if (token) notifTimer = setTimeout(loadNotifs, document.hidden ? 30000 : 5000);
+}
+function renderNotifs() {
+  $("notifBtn").classList.toggle("hidden", !token);
+  const unread = notifs.filter((n) => !n.readAt).length;
+  $("notifCount").textContent = unread > 9 ? "9+" : unread; $("notifCount").classList.toggle("hidden", !unread);
+  $("readAll").disabled = !unread;
+  $("notifList").innerHTML = notifs.length ? "" : '<li class="none">No notifications yet. Confirm an order to get one.</li>';
+  notifs.forEach((n) => {
+    const li = document.createElement("li"); li.className = n.readAt ? "" : "unread clickable"; li.tabIndex = 0;
+    li.innerHTML = `<span class="ic">${(NOTIF[n.type] || ["🔔"])[0]}</span><span>${esc(notifText(n))}<br><span class="when">${esc(ago(n.occurredAt || n.createdAt))}</span></span><span class="dot"></span>`;
+    li.onclick = () => markRead(n);
+    $("notifList").appendChild(li);
+  });
+}
+async function markRead(n) {
+  if (n.readAt) return;
+  try { const res = await api("POST", `/api/notifications/${n.id}/read`); if (res.ok) Object.assign(n, await res.json()); } catch (e) {}
+  renderNotifs();
+}
+function toggleNotifs(open) {
+  $("notifPanel").classList.toggle("hidden", !open); $("notifBtn").setAttribute("aria-expanded", open);
+}
+$("notifBtn").onclick = (e) => { e.stopPropagation(); toggleNotifs($("notifPanel").classList.contains("hidden")); };
+$("notifPanel").onclick = (e) => e.stopPropagation();
+document.addEventListener("click", () => toggleNotifs(false));
+$("readAll").onclick = async () => { for (const n of notifs.filter((x) => !x.readAt)) await markRead(n); };
+document.addEventListener("visibilitychange", () => { if (!document.hidden && token) loadNotifs(); });
 
 function say(msg, ok) { $("orderMsg").textContent = msg; $("orderMsg").className = "msg " + (ok ? "ok" : "err"); }
 
@@ -384,7 +440,7 @@ $("clearLog").onclick = () => { $("log").innerHTML = ""; };
 $("refreshOrders").onclick = () => loadOrders();
 $("moreOrders").onclick = () => loadOrders(true);
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") { if (!$("modal").classList.contains("hidden")) closeProduct(); else openCart(false); }
+  if (e.key === "Escape") { toggleNotifs(false); if (!$("modal").classList.contains("hidden")) closeProduct(); else openCart(false); }
   if (e.key === "/" && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $("search").focus(); }
 });
 const onScroll = () => { $("top").classList.toggle("scrolled", scrollY > 8); $("toTop").classList.toggle("show", scrollY > 600); };

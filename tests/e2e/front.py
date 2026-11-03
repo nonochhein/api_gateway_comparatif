@@ -135,6 +135,22 @@ with sync_playwright() as pw:
         page.locator("#orders").screenshot(path=f"{SHOTS}/mes-commandes.png")
     check("mes commandes : passer, confirmer, livrer, recommander", orders)
 
+    def notifications():
+        bell = page.locator("#notifBtn")
+        expect(bell).to_be_visible()
+        expect(page.locator("#notifCount")).to_have_text("2", timeout=10000)   # commande confirmée puis livrée
+        bell.click()
+        expect(page.locator("#notifList li.unread")).to_have_count(2)
+        expect(page.locator("#notifList")).to_contain_text("delivered")
+        page.screenshot(path=f"{SHOTS}/notifications.png")
+        page.locator("#notifList li.unread").first.click()
+        expect(page.locator("#notifCount")).to_have_text("1")
+        page.click("#readAll")
+        expect(page.locator("#notifCount")).to_be_hidden()
+        page.keyboard.press("Escape")
+        expect(page.locator("#notifPanel")).to_be_hidden()
+    check("notifications : cloche, compteur, lecture", notifications)
+
     def cancel():
         page.click("#cartBtn"); page.click("#checkout")
         expect(page.locator(".order")).to_have_count(2)

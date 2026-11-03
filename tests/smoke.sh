@@ -24,6 +24,7 @@ t "catalogue public (catégories)"          200 GET    /api/categories
 t "création produit sans jeton"            401 POST   /api/products "" '{"name":"x"}'
 t "suppression produit sans jeton"         401 DELETE /api/products/1
 t "commandes sans jeton"                   401 GET    /api/orders
+t "notifications sans jeton"               401 GET    "/api/notifications?userId=x"
 t "jeton illisible"                        401 GET    /api/orders "Authorization: Bearer n.importe.quoi"
 [ -n "$TOKEN_FORGED" ]      && t "jeton falsifié (mauvaise clé)"   401 GET /api/orders "$(bearer "$TOKEN_FORGED")"
 [ -n "$TOKEN_EXPIRED" ]     && t "jeton expiré"                    401 GET /api/orders "$(bearer "$TOKEN_EXPIRED")"
@@ -33,6 +34,7 @@ for sso in AUTHENTIK AUTHELIA; do
   if [ -n "$tok" ]; then
     H="$(bearer "$tok")"
     t "[$sso] commandes (liste)"           200 GET  /api/orders "$H"
+    t "[$sso] notifications (liste)"       200 GET  "/api/notifications?userId=smoke-$sso" "$H"
     # Commande réelle puis annulation (libère la réservation de stock)
     r=$(curl -s -w '\n%{http_code}' -X POST -H "$H" -H 'Content-Type: application/json' -d "{\"userId\":\"smoke-$sso\",\"items\":[{\"productId\":\"$PID\",\"quantity\":1}]}" "$GW/api/orders")
     code=${r##*$'\n'}; oid=$(echo "${r%$'\n'*}" | jid)

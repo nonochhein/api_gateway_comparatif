@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 TMP=$(mktemp -d); NET=ammu-gateway-test
-trap 'docker compose down -t 2 >/dev/null 2>&1 || true; docker rm -f mock-catalog mock-order >/dev/null 2>&1 || true; docker network rm $NET >/dev/null 2>&1 || true; rm -rf "$TMP"' EXIT
+trap 'docker compose down -t 2 >/dev/null 2>&1 || true; docker rm -f mock-catalog mock-order mock-notification >/dev/null 2>&1 || true; docker network rm $NET >/dev/null 2>&1 || true; rm -rf "$TMP"' EXIT
 for n in authentik authelia forged; do openssl genrsa -out $TMP/$n.key 2048 2>/dev/null; openssl rsa -in $TMP/$n.key -pubout -out $TMP/$n.pub 2>/dev/null; done
 # Test du convertisseur JWKS -> PEM : le PEM reconstruit doit être identique à celui d'openssl
 python3 - "$TMP" <<'PY'
@@ -26,7 +26,7 @@ s = s.replace(blocks[0], "        rsa_public_key: |\n" + pem("authentik")).repla
 open(f"{t}/kong.yml", "w").write(s)
 PY
 docker network create $NET >/dev/null 2>&1 || true
-for s in catalog order; do
+for s in catalog order notification; do
   docker rm -f mock-$s >/dev/null 2>&1 || true
   docker run -d --name mock-$s --network $NET --network-alias $s-service -e SERVICE=$s \
     -v "$PWD/tests/mock/app.py:/app.py:ro" -v "$PWD/db:/db:ro" python:3.12-alpine python /app.py >/dev/null

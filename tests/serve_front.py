@@ -17,7 +17,8 @@ class Front(mock["H"]):
         path = self.path.split("?")[0]
         if path.startswith("/api/"):
             with lock:
-                mock["SERVICE"] = "order" if path.startswith("/api/orders") else "catalog"
+                mock["SERVICE"] = ("order" if path.startswith("/api/orders") else
+                                   "notification" if path.startswith("/api/notifications") else "catalog")
                 return self.handle_any(method)
         f = os.path.normpath(os.path.join(ROOT, "frontend", path.lstrip("/")))
         if os.path.isdir(f):

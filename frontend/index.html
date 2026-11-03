@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ammu-Nation — Los Santos</title>
 <meta name="description" content="Fictional GTA V-inspired gun store. API Gateway school project.">
-<link rel="stylesheet" href="/style.css?v=8">
+<link rel="stylesheet" href="/style.css?v=9">
 <link rel="preload" as="image" href="/cursors/flip.png?v=4">
 </head>
 <body>
@@ -20,6 +20,14 @@
     <nav><a href="#catalogue">Catalog</a><a href="#orders">My orders</a><a href="#gateway">Gateway</a></nav>
     <div class="actions">
       <span id="who" class="who"></span>
+      <div class="notif-wrap">
+        <button id="notifBtn" class="bell hidden" aria-label="Notifications" aria-expanded="false" aria-controls="notifPanel"><span class="ic">🔔</span><span class="badge hidden" id="notifCount">0</span></button>
+        <div id="notifPanel" class="notif-panel hidden" role="dialog" aria-label="Notifications">
+          <div class="notif-head"><b>Notifications</b><button id="readAll" class="link">Mark all as read</button></div>
+          <ul id="notifList"></ul>
+          <p class="notif-foot">Delivered by Kafka · <code>orders.events.v1</code></p>
+        </div>
+      </div>
       <button id="login" class="btn ghost">SSO login</button>
       <button id="cartBtn" class="btn">Cart<span class="badge" id="cartCount">0</span></button>
     </div>
@@ -102,6 +110,6 @@
 <button id="toTop" class="totop" aria-label="Back to top">↑</button>
 <div id="toasts" class="toasts" aria-live="polite"></div>
 <footer><b>Ammu-Nation</b> — parody. GTA V universe © Rockstar Games. Demo site with no official affiliation; no weapons are sold.</footer>
-<script src="/app.js?v=6"></script>
+<script src="/app.js?v=7"></script>
 </body>
 </html>
