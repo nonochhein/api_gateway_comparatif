@@ -1,13 +1,6 @@
 # Gateway Kong (DB-less) devant catalog-service et order-service (Spring Boot).
-# Les services n'ont ni authentification ni limitation : la gateway les apporte.
+# Pas d'authentification ici : le SSO s'en charge. Kong transmet l'en-tête Authorization tel quel au backend.
 _format_version: "3.0"
-
-consumers:
-  - username: ammu-client
-    jwt_secrets:
-      - key: ammu-client          # valeur attendue dans la claim "iss" du JWT
-        secret: ammu-nation-dev-secret-change-me-0123456789   # DEV UNIQUEMENT : à remplacer (et dans JWT_SECRET pour scripts/jwt.py)
-        algorithm: HS256
 
 services:
   - name: catalog-service
@@ -16,23 +9,12 @@ services:
     read_timeout: 10000
     retries: 2
     routes:
-      # Lecture publique du catalogue
-      - name: catalog-read
+      - name: catalog
         paths: ["/api/products", "/api/categories"]
-        methods: [GET, HEAD, OPTIONS]
         strip_path: false
         plugins:
           - name: rate-limiting
             config: {second: 50, policy: local, limit_by: ip, error_code: 429}
-      # Écriture du catalogue : JWT obligatoire
-      - name: catalog-write
-        paths: ["/api/products", "/api/categories"]
-        methods: [POST, PUT, PATCH, DELETE]
-        strip_path: false
-        plugins:
-          - name: jwt
-          - name: rate-limiting
-            config: {second: 20, policy: local, limit_by: consumer, error_code: 429}
       # API interne (réservations) et supervision : jamais exposées à l'extérieur
       - name: blocked-internal
         paths: ["/internal", "/actuator"]
@@ -51,9 +33,8 @@ services:
         paths: ["/api/orders"]
         strip_path: false
         plugins:
-          - name: jwt
           - name: rate-limiting
-            config: {second: 20, policy: local, limit_by: consumer, error_code: 429}
+            config: {second: 30, policy: local, limit_by: ip, error_code: 429}
           - name: request-size-limiting
             config: {allowed_payload_size: 1, size_unit: megabytes}
 
@@ -62,8 +43,9 @@ plugins:
     config: {header_name: X-Request-Id, generator: uuid, echo_downstream: true}
   - name: cors
     config:
-      origins: ["*"]          # dev : restreindre à l'origine du front en production
+      origins: ["*"]          # dev : restreindre à l'origine du front / du SSO en production
       methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
       headers: [Authorization, Content-Type, X-Request-Id]
       exposed_headers: [X-Request-Id]
+      credentials: false
       max_age: 3600

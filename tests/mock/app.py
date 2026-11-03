@@ -27,7 +27,7 @@ class H(BaseHTTPRequestHandler):
         ok = {"catalog": ("/api/products", "/api/categories", "/internal/"), "order": ("/api/orders",)}[SERVICE]
         if not p.startswith(ok):
             return self.reply(404, {"title": "Not Found"})
-        self.reply(201 if method == "POST" else 200, {"service": SERVICE, "method": method, "path": p})
+        self.reply(201 if method == "POST" else 200, {"service": SERVICE, "method": method, "path": p, "authorization": self.headers.get("Authorization")})
 
     do_GET = lambda s: s.handle_any("GET")
     do_POST = lambda s: s.handle_any("POST")

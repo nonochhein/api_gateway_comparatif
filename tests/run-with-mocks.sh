@@ -12,7 +12,7 @@ done
 export BACKEND_NETWORK=$NET
 docker compose up -d --force-recreate >/dev/null 2>&1
 for i in $(seq 1 40); do curl -sf -o /dev/null localhost:8000/api/products && break; sleep 1; done
-rc=0; tests/smoke.sh || rc=$?
+rc=0; CHECK_AUTH_FORWARD=1 tests/smoke.sh || rc=$?
 docker compose down -t 2 >/dev/null 2>&1
 docker rm -f mock-catalog mock-order >/dev/null 2>&1
 docker network rm $NET >/dev/null 2>&1 || true
