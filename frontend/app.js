@@ -3,6 +3,26 @@ const money = (n) => "GTA$ " + n.toLocaleString("fr-FR");
 let products = [], cart = {}, filter = "Tous", token = null;
 try { token = sessionStorage.getItem("token"); } catch (e) {}
 
+
+// Silhouettes dessinées pour le projet (pas d'images officielles du jeu)
+const ICON = {
+  "Pistol": '<rect x="38" y="32" width="112" height="18" rx="3"/><rect x="146" y="36" width="22" height="8"/><polygon points="96,50 126,50 116,88 92,88"/><path d="M70 50v14h24" fill="none" stroke="currentColor" stroke-width="5"/>',
+  "Combat Pistol": '<rect x="34" y="30" width="118" height="20" rx="3"/><rect x="150" y="35" width="24" height="9"/><polygon points="94,50 126,50 116,90 90,90"/><rect x="60" y="25" width="14" height="6"/><path d="M68 50v14h24" fill="none" stroke="currentColor" stroke-width="5"/>',
+  "AP Pistol": '<rect x="30" y="30" width="124" height="18" rx="3"/><rect x="152" y="35" width="26" height="8"/><polygon points="92,48 124,48 114,78 90,78"/><rect x="96" y="78" width="16" height="22" rx="2"/><path d="M66 48v14h24" fill="none" stroke="currentColor" stroke-width="5"/>',
+  "Micro SMG": '<rect x="40" y="36" width="96" height="18" rx="3"/><rect x="136" y="40" width="42" height="7"/><rect x="82" y="54" width="14" height="38"/><polygon points="108,54 128,54 122,80 106,80"/><path d="M40 40l-26 6v8l26 2" />',
+  "SMG": '<rect x="46" y="34" width="104" height="20" rx="3"/><rect x="150" y="39" width="34" height="7"/><rect x="86" y="54" width="14" height="40"/><polygon points="112,54 132,54 126,80 110,80"/><polygon points="46,36 14,42 14,60 46,52"/><rect x="70" y="28" width="30" height="6"/>',
+  "Assault Rifle": '<polygon points="6,40 52,38 52,60 6,70"/><rect x="52" y="38" width="86" height="18" rx="3"/><rect x="138" y="43" width="56" height="6"/><polygon points="92,56 112,56 118,90 98,90"/><polygon points="116,56 130,56 126,76 114,76"/><rect x="60" y="30" width="40" height="8"/>',
+  "Carbine Rifle": '<polygon points="8,42 50,40 50,60 8,68"/><rect x="50" y="40" width="84" height="16" rx="3"/><rect x="134" y="44" width="58" height="6"/><rect x="92" y="56" width="16" height="36" rx="2"/><polygon points="114,56 128,56 124,76 112,76"/><rect x="62" y="30" width="46" height="10" rx="2"/>',
+  "Pump Shotgun": '<polygon points="6,42 44,42 44,62 6,74"/><rect x="44" y="40" width="48" height="18" rx="3"/><rect x="92" y="42" width="102" height="8"/><rect x="104" y="52" width="46" height="12" rx="4"/>',
+  "Sawed-Off Shotgun": '<polygon points="10,40 56,40 60,64 10,76"/><rect x="56" y="40" width="30" height="16" rx="3"/><rect x="86" y="42" width="64" height="7"/><rect x="86" y="51" width="64" height="7"/>',
+  "Sniper Rifle": '<polygon points="6,46 44,44 44,66 6,76"/><rect x="44" y="44" width="62" height="16" rx="3"/><rect x="106" y="49" width="88" height="5"/><rect x="62" y="28" width="62" height="12" rx="6"/><rect x="72" y="40" width="6" height="6"/><rect x="108" y="40" width="6" height="6"/><path d="M150 54l-14 30M160 54l14 30" stroke="currentColor" stroke-width="4" fill="none"/>',
+  "Knife": '<polygon points="52,50 150,36 176,52 52,62"/><rect x="14" y="48" width="40" height="16" rx="5"/>',
+  "Baseball Bat": '<polygon points="14,56 150,38 184,40 184,56 150,60 14,66"/>',
+  "Body Armor": '<path d="M52 20h24c4 10 44 10 48 0h24l22 24-16 14-8-6v44H54V52l-8 6-16-14z"/>',
+  "Ammo Pack": '<rect x="30" y="52" width="140" height="42" rx="4"/><rect x="40" y="22" width="16" height="30" rx="8"/><rect x="66" y="22" width="16" height="30" rx="8"/><rect x="92" y="22" width="16" height="30" rx="8"/><rect x="118" y="22" width="16" height="30" rx="8"/><rect x="144" y="22" width="16" height="30" rx="8"/>'
+};
+const svg = (name) => `<svg viewBox="0 0 200 100" fill="currentColor" aria-label="${name}">${ICON[name] || ICON["Pistol"]}</svg>`;
+
 // Journal des appels : montre ce que renvoie la gateway (statut, instance, id de corrélation)
 function trace(method, url, res) {
   const tr = document.createElement("tr");
@@ -46,7 +66,7 @@ function renderGrid() {
   $("grid").innerHTML = "";
   products.filter((p) => filter === "Tous" || p.category === filter).forEach((p) => {
     const d = document.createElement("div"); d.className = "card";
-    d.innerHTML = `<span class="cat">${p.category}</span><h3>${p.name}</h3><p>${p.description}</p>` +
+    d.innerHTML = `<div class="pic">${svg(p.name)}</div><span class="cat">${p.category}</span><h3>${p.name}</h3><p>${p.description}</p>` +
       `<div class="row"><span class="price">${money(p.price)}</span><button class="btn">Ajouter</button></div>`;
     d.querySelector("button").onclick = () => { cart[p.id] = (cart[p.id] || 0) + 1; renderCart(); };
     $("grid").appendChild(d);
