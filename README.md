@@ -1,5 +1,7 @@
 # API Gateway — Ammu-Nation (Kong)
 
+[![CI](https://github.com/nonochhein/api_gateway_comparatif/actions/workflows/ci.yml/badge.svg)](https://github.com/nonochhein/api_gateway_comparatif/actions/workflows/ci.yml)
+
 Point d'entrée unique devant les microservices Spring Boot du backend
 ([`tp-cesi-ammu-nation-backend-kafka`](https://github.com/hubhed16/tp-cesi-ammu-nation-backend-kafka)) :
 `catalog-service` et `order-service`.
@@ -110,6 +112,26 @@ tests/run-with-mocks.sh        # sans backend ni SSO : faux services (alimentés
 TOKEN_AUTHENTIK=<jeton> TOKEN_AUTHELIA=<jeton> tests/smoke.sh   # vrai backend et vrais SSO : crée puis annule une commande,
                                                                  # crée puis désactive un produit « SMOKE-… » (reste en base, inactif)
 ```
+
+Site sans Docker ni Kong (faux services, pas de contrôle de jeton) et tests dans un vrai navigateur :
+```bash
+python3 tests/serve_front.py                     # http://127.0.0.1:8765
+pip install -r tests/e2e/requirements.txt && python3 -m playwright install chromium
+python3 tests/e2e/front.py http://127.0.0.1:8765  # catalogue, curseurs, recherche, fiche, panier, commandes, mobile ; captures dans e2e-captures/
+```
+
+### Intégration continue (GitHub Actions)
+
+`.github/workflows/ci.yml` tourne à chaque push et pull request (et à la main depuis l'onglet *Actions*). Quatre jobs :
+
+| Job | Ce qu'il vérifie |
+|---|---|
+| **Vérifications** | syntaxe JS et Python, `shellcheck` des scripts, fichiers générés à jour (`db/gta-weapons.sql`, curseurs), images des produits et fichiers référencés présents |
+| **Config Kong** | `kong config parse kong/kong.yml` |
+| **Gateway** | `tests/run-with-mocks.sh` : Kong + faux services + 2 SSO simulés (401, 403, 404, 429, CORS, en-têtes transmis) |
+| **Site** | `tests/e2e/front.py` dans Chromium ; les captures d'écran sont jointes au run (*Artifacts*) |
+
+Les résultats PASS / FAIL s'affichent dans le résumé du run. Le backend Java et les vrais SSO ne sont pas testés par la CI.
 
 ## Sécurité : à savoir
 

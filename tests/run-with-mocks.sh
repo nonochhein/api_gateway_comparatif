@@ -33,11 +33,12 @@ for s in catalog order; do
 done
 export BACKEND_NETWORK=$NET KONG_CONFIG=$TMP/kong.yml
 docker compose up -d --force-recreate >/dev/null 2>&1
-for i in $(seq 1 40); do curl -sf -o /dev/null localhost:8000/api/products && break; sleep 1; done
+for _ in $(seq 1 40); do curl -sf -o /dev/null localhost:8000/api/products && break; sleep 1; done
 ISS_A="https://authentik.example.com/application/o/ammu-nation/"; ISS_B="https://auth.example.com"
-export TOKEN_AUTHENTIK=$(python3 tests/make_token.py $TMP/authentik.key "$ISS_A")
-export TOKEN_AUTHELIA=$(python3 tests/make_token.py $TMP/authelia.key "$ISS_B")
-export TOKEN_FORGED=$(python3 tests/make_token.py $TMP/forged.key "$ISS_A")
-export TOKEN_EXPIRED=$(python3 tests/make_token.py $TMP/authentik.key "$ISS_A" -60)
-export TOKEN_UNKNOWN_ISS=$(python3 tests/make_token.py $TMP/authentik.key "https://inconnu.example.com")
+TOKEN_AUTHENTIK=$(python3 tests/make_token.py "$TMP/authentik.key" "$ISS_A")
+TOKEN_AUTHELIA=$(python3 tests/make_token.py "$TMP/authelia.key" "$ISS_B")
+TOKEN_FORGED=$(python3 tests/make_token.py "$TMP/forged.key" "$ISS_A")
+TOKEN_EXPIRED=$(python3 tests/make_token.py "$TMP/authentik.key" "$ISS_A" -60)
+TOKEN_UNKNOWN_ISS=$(python3 tests/make_token.py "$TMP/authentik.key" "https://inconnu.example.com")
+export TOKEN_AUTHENTIK TOKEN_AUTHELIA TOKEN_FORGED TOKEN_EXPIRED TOKEN_UNKNOWN_ISS
 CHECK_FORWARD=1 tests/smoke.sh

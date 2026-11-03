@@ -58,7 +58,7 @@ if [ -n "$CHECK_FORWARD" ] && [ -n "$TOKEN_AUTHENTIK" ]; then
   echo "$r" | grep -q '"consumer": "sso-authentik"' && echo "PASS  X-Consumer-Username transmis (sso-authentik)" || { echo "FAIL  X-Consumer-Username absent"; fail=1; }
 fi
 if [ -n "$TOKEN_AUTHENTIK" ]; then
-  n429=$(for i in $(seq 1 100); do curl -s -o /dev/null -w '%{http_code}\n' -H "$(bearer "$TOKEN_AUTHENTIK")" "$GW/api/orders" & done | grep -c 429)
+  n429=$(for _ in $(seq 1 100); do curl -s -o /dev/null -w '%{http_code}\n' -H "$(bearer "$TOKEN_AUTHENTIK")" "$GW/api/orders" & done | grep -c 429)
   [ "$n429" -ge 1 ] && echo "PASS  rate limiting par utilisateur ($n429 réponses 429 sur 100)" || { echo "FAIL  aucun 429 sur 100 requêtes"; fail=1; }
 fi
 exit $fail

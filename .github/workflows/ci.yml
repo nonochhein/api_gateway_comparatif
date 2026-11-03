@@ -1,0 +1,131 @@
+# CI : vérifications rapides, config Kong, gateway testée avec Kong + faux services + 2 SSO simulés, site testé dans Chromium.
+# Lancée à chaque push et pull request (et à la main depuis l'onglet Actions).
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash          # bash -eo pipefail : un échec avant « | tee » fait bien échouer l'étape
+
+jobs:
+  verifs:
+    name: Vérifications (syntaxe, shell, fichiers générés)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+
+      - name: JavaScript du front
+        run: node --check frontend/app.js
+
+      - name: Scripts Python
+        run: python -m py_compile scripts/*.py tests/*.py tests/mock/*.py tests/e2e/*.py
+
+      - name: Scripts shell (shellcheck)
+        run: shellcheck -S warning tests/*.sh
+
+      - name: Fichiers générés à jour (SQL des armes, curseurs)
+        run: |
+          python scripts/make_weapons_sql.py > /dev/null
+          python scripts/make_cursors.py > /dev/null
+          git diff --exit-code -- db/gta-weapons.sql frontend/cursors \
+            || { echo "::error::Fichiers générés pas à jour : relancer scripts/make_weapons_sql.py et scripts/make_cursors.py puis commiter"; exit 1; }
+
+      - name: Images et liens du site
+        run: |
+          python - <<'PY'
+          import json, os, re, sys
+          bad = []
+          sql = open("db/gta-weapons.sql", encoding="utf-8").read()
+          for url in sorted(set(re.findall(r"'(/images/[^']+)'", sql))):          # imageUrl de chaque produit
+              if not os.path.isfile("frontend" + url): bad.append("image manquante : " + url)
+          for w in json.load(open("db/weapons.json", encoding="utf-8")):            # icône de chaque arme
+              f = w["id"] + ".png"
+              if not os.path.isfile(os.path.join("frontend/images/weapons", f)):
+                  bad.append("icône manquante : " + f)
+          html = open("frontend/index.html", encoding="utf-8").read()
+          for ref in re.findall(r'(?:href|src)="(/[^"?#]+)', html):                 # CSS, JS, curseurs
+              if not os.path.isfile("frontend" + ref): bad.append("fichier référencé absent : " + ref)
+          js = open("frontend/app.js", encoding="utf-8").read()
+          ids = set(re.findall(r'id="([^"]+)"', html + js))                       # + id créés par app.js
+          for i in sorted(set(re.findall(r'\$\("([A-Za-z]+)"\)', js)) - ids):
+              bad.append(f'app.js utilise $("{i}") absent de index.html')
+          print("\n".join(bad) or "OK"); sys.exit(1 if bad else 0)
+          PY
+
+  kong-config:
+    name: Config Kong valide
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: kong config parse
+        run: docker run --rm -e KONG_DATABASE=off -v "$PWD/kong:/kong:ro" kong:3.8 kong config parse /kong/kong.yml
+
+  gateway:
+    name: Gateway (Kong + faux services + 2 SSO simulés)
+    needs: [verifs, kong-config]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tests de fumée
+        run: bash tests/run-with-mocks.sh 2>&1 | tee smoke.log
+      - name: Résumé
+        if: always()
+        run: |
+          {
+            echo "### Gateway : $(grep -c '^PASS' smoke.log || true) réussis, $(grep -c '^FAIL' smoke.log || true) échoués"
+            echo '```'; grep -E '^(PASS|FAIL)' smoke.log || true; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Journaux Kong en cas d'échec
+        if: failure()
+        run: docker compose logs kong --tail 200 || true
+
+  front:
+    name: Site dans Chromium (Playwright)
+    needs: verifs
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip, cache-dependency-path: tests/e2e/requirements.txt}
+      - name: Playwright
+        run: |
+          pip install -r tests/e2e/requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Tests du site
+        run: |
+          python tests/serve_front.py 8765 > serve.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf -o /dev/null http://127.0.0.1:8765/ && break; sleep 1; done
+          python tests/e2e/front.py http://127.0.0.1:8765 e2e-captures 2>&1 | tee e2e.log
+      - name: Résumé
+        if: always()
+        run: |
+          {
+            echo "### Site : $(grep -c '^PASS' e2e.log || true) réussis, $(grep -c '^FAIL' e2e.log || true) échoués"
+            echo '```'; grep -E '^(PASS|FAIL)' e2e.log || true; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Captures d'écran
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: captures-site
+          path: e2e-captures/
+          if-no-files-found: ignore
