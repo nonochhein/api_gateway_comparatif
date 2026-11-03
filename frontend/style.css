@@ -2,8 +2,8 @@
    Curseurs 8 bit : poing fermé en navigation, doigt d'honneur au clic (voir app.js). */
 :root{--bg:#f1efe9;--card:#fff;--line:#dedad0;--red:#c8102e;--red-d:#9d0b23;--yellow:#ffc20e;--text:#161616;--muted:#6b6b6b;--ink:#0d0d0d;--radius:10px;--shadow:0 2px 0 rgba(0,0,0,.06),0 10px 24px -12px rgba(0,0,0,.35)}
 *{box-sizing:border-box}
-html,body,*{cursor:url(/cursors/fist.png) 16 6,auto}
-html.flip,html.flip *{cursor:url(/cursors/flip.png) 16 2,auto!important}
+html,body,*{cursor:url(/cursors/fist.png?v=3) 16 6,auto}
+html.flip,html.flip *{cursor:url(/cursors/flip.png?v=3) 16 2,auto!important}
 body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.45}
 .hidden{display:none!important}
 a{color:inherit}

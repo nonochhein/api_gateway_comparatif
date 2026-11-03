@@ -13,7 +13,7 @@ document.addEventListener("pointerdown", (e) => {
   clearTimeout(flipTimer);
   flipTimer = setTimeout(() => document.documentElement.classList.remove("flip"), 450);
   const s = document.createElement("img");                  // + sprite qui jaillit (visible aussi au tactile)
-  s.className = "pop"; s.src = "/cursors/flip.png"; s.alt = "";
+  s.className = "pop"; s.src = "/cursors/flip.png?v=3"; s.alt = "";
   s.style.left = e.clientX + "px"; s.style.top = e.clientY + "px";
   document.body.appendChild(s); setTimeout(() => s.remove(), 750);
 }, true);
