@@ -27,6 +27,8 @@ curseur « doigt d'honneur » parodique, catalogue paginé avec filtres, recherc
 Il utilise les vrais formats du backend : `GET /api/products` (page), `GET /api/categories`, `POST /api/orders` `{userId, items:[{productId, quantity}]}`.
 
 Ouvrir `http://localhost:8000`. Commander demande un jeton du SSO : le SSO n'existant pas encore, le bouton « Connexion SSO » accepte un JWT collé à la main.
+En local, `scripts/dev-sso.sh` ajoute à Kong un SSO de développement (clé générée dans `.dev/`, ignoré par git) et écrit un jeton de 12 h dans `.dev/token.txt` : le coller dans « SSO login ».
+`scripts/dev-sso.sh off` remet Kong sur `kong/kong.yml`. Kafbat (http://localhost:8083) montre les messages du topic `orders.events.v1`.
 Une console en bas de page affiche statut et `X-Request-Id` de chaque appel.
 
 Curseur 8 bit **noir et blanc** : **poing fermé** en navigation, **doigt d'honneur** dès qu'on survole un élément cliquable (liens, boutons, filtres, fiches produit, champ de recherche) et au clic (un petit sprite jaillit, y compris au tactile).
