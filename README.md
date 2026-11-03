@@ -19,7 +19,8 @@ des deux SSO sur les mêmes routes. Un « consommateur » Kong par SSO (`sso-aut
 
 ## Site Ammu-Nation (front) et données
 
-Le site (`frontend/`, HTML/CSS/JS, servi par nginx **derrière Kong**) imite la boutique d'armes d'Ammu-Nation de GTA V : charte rouge / blanc / noir,
+Le site (`frontend/`, HTML/CSS/JS, servi par nginx **derrière Kong**, **en anglais**, catalogue compris) imite la boutique d'armes d'Ammu-Nation de GTA V : charte rouge / blanc / noir,
+bandeau boursier façon Wall Street en haut (fausses actions du jeu qui bougent en direct, brèves absurdes et cours des armes du catalogue ; pause au survol),
 curseur « doigt d'honneur » parodique, catalogue paginé avec filtres, recherche, panier et commande. **Aucune vente réelle**. Les images des armes sont les icônes du jeu (© Rockstar Games), récupérées sur [wiki.rage.mp](https://wiki.rage.mp) et utilisées ici pour un travail scolaire non commercial. La source de chaque icône est indiquée dans `db/weapons.json`.
 Il utilise les vrais formats du backend : `GET /api/products` (page), `GET /api/categories`, `POST /api/orders` `{userId, items:[{productId, quantity}]}`.
 

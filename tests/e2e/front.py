@@ -55,6 +55,26 @@ with sync_playwright() as pw:
         assert "grayscale(1)" in page.eval_on_selector(".pop", "e => getComputedStyle(e).filter")
     check("clic : sprite en noir et blanc", click_pop)
 
+    def english():
+        assert page.get_attribute("html", "lang") == "en"
+        expect(page.locator("#cartBtn")).to_contain_text("Cart")
+        expect(page.locator("#filters .chip").first).to_have_text("All")
+        expect(page.locator(".card .row button").first).to_have_text("Add")
+    check("site en anglais", english)
+
+    def ticker():
+        track = page.locator("#ticker")
+        expect(track.locator(".tk.news").first).to_be_attached()
+        expect(track).to_contain_text("AMMU")
+        assert track.locator(".tk").count() >= 2 * 20, "pas assez de lignes"          # 2 copies pour la boucle
+        assert page.eval_on_selector("#ticker", "e => getComputedStyle(e).animationName") == "tick"
+        first = page.eval_on_selector("#ticker", "e => e.getBoundingClientRect().left")
+        page.wait_for_timeout(600)
+        assert page.eval_on_selector("#ticker", "e => e.getBoundingClientRect().left") < first, "le bandeau ne défile pas"
+        sym = page.evaluate("products[0].sku.replace(/^GTA-/, '').slice(0, 8)")                 # armes du catalogue cotées
+        expect(track).to_contain_text(sym)
+    check("bandeau boursier : défile, blagues et cours des armes", ticker)
+
     def search():
         page.fill("#search", "pistol")
         expect(page.locator(".card").first).to_contain_text("Pistol", ignore_case=True)
@@ -65,9 +85,9 @@ with sync_playwright() as pw:
     check("recherche et réinitialisation", search)
 
     def filters():
-        page.locator(".chip", has_text="Pistolets").click()
-        expect(page.locator(".card .cat").first).to_have_text("Pistolets")
-        page.locator(".chip", has_text="Tous").click()
+        page.locator("#filters .chip", has_text="Handguns").click()
+        expect(page.locator(".card .cat").first).to_have_text("Handguns")
+        page.locator("#filters .chip", has_text="All").click()
     check("filtre par catégorie", filters)
 
     def modal():
@@ -87,32 +107,32 @@ with sync_playwright() as pw:
     check("panier conservé après rechargement", persist)
 
     def logged_out():
-        page.locator("#commandes").scroll_into_view_if_needed()
+        page.locator("#orders").scroll_into_view_if_needed()
         expect(page.locator("#ordersLogin")).to_be_visible()
         page.click("#cartBtn"); page.click("#checkout")
-        expect(page.locator("#orderMsg")).to_contain_text("Connexion SSO requise")
+        expect(page.locator("#orderMsg")).to_contain_text("SSO login required")
         page.click("#closeCart")
     check("commande refusée sans connexion", logged_out)
 
     def orders():
         page.evaluate("t => sessionStorage.setItem('token', t)", TOKEN)
         page.reload()
-        expect(page.locator("#login")).to_have_text("Déconnexion")
+        expect(page.locator("#login")).to_have_text("Log out")
         page.click("#cartBtn"); page.click("#checkout")
-        expect(page.locator("#orderMsg")).to_contain_text("enregistrée")
+        expect(page.locator("#orderMsg")).to_contain_text("placed")
         expect(page.locator("#cartCount")).to_have_text("0")
         page.click("#closeCart")
         order = page.locator(".order").first
-        expect(order.locator(".status")).to_have_text("En attente")
+        expect(order.locator(".status")).to_have_text("Pending")
         order.locator("[data-a=confirm]").click()
-        expect(order.locator(".status")).to_have_text("Confirmée")
+        expect(order.locator(".status")).to_have_text("Confirmed")
         order.locator("[data-a=complete]").click()
-        expect(order.locator(".status")).to_have_text("Livrée")
+        expect(order.locator(".status")).to_have_text("Delivered")
         expect(order.locator("[data-a=cancel]")).to_have_count(0)
         order.locator("[data-a=reorder]").click()
         expect(page.locator("#cartCount")).to_have_text("2")
         page.click("#closeCart")
-        page.locator("#commandes").screenshot(path=f"{SHOTS}/mes-commandes.png")
+        page.locator("#orders").screenshot(path=f"{SHOTS}/mes-commandes.png")
     check("mes commandes : passer, confirmer, livrer, recommander", orders)
 
     def cancel():
@@ -120,8 +140,8 @@ with sync_playwright() as pw:
         expect(page.locator(".order")).to_have_count(2)
         page.click("#closeCart")
         page.locator(".order").first.locator("[data-a=cancel]").click()
-        expect(page.locator(".order").first.locator(".status")).to_have_text("Annulée")
-        page.locator("#orderFilters .chip", has_text="Annulée").click()
+        expect(page.locator(".order").first.locator(".status")).to_have_text("Cancelled")
+        page.locator("#orderFilters .chip", has_text="Cancelled").click()
         expect(page.locator(".order")).to_have_count(1)
     check("mes commandes : annulation et filtre", cancel)
 
