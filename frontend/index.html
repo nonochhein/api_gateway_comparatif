@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ammu-Nation — Los Santos</title>
 <meta name="description" content="Boutique fictive inspirée de GTA V. Projet pédagogique API Gateway.">
-<link rel="stylesheet" href="/style.css?v=5">
+<link rel="stylesheet" href="/style.css?v=6">
 <link rel="preload" as="image" href="/cursors/flip.png?v=4">
 </head>
 <body>
@@ -13,7 +13,7 @@
 <header class="top" id="top">
   <div class="top-in">
     <a class="logo" href="/"><b>AMMU-NATION</b><small>Los Santos<br>Since 1992</small></a>
-    <nav><a href="#catalogue">Catalogue</a><a href="#gateway">Gateway</a></nav>
+    <nav><a href="#catalogue">Catalogue</a><a href="#commandes">Mes commandes</a><a href="#gateway">Gateway</a></nav>
     <div class="actions">
       <span id="who" class="who"></span>
       <button id="login" class="btn ghost">Connexion SSO</button>
@@ -45,6 +45,16 @@
   <div id="grid" class="grid"></div>
   <div class="pager"><button id="prev" class="btn ghost">‹ Précédent</button><span id="pageInfo" class="count"></span><button id="next" class="btn ghost">Suivant ›</button></div>
 </main>
+
+<section id="commandes" class="orders">
+  <div class="section-title"><h2>Mes commandes</h2><span class="count" id="ordersInfo"></span></div>
+  <div class="tools">
+    <div class="filters" id="orderFilters"></div>
+    <button id="refreshOrders" class="btn ghost dark-ghost">↻ Actualiser</button>
+  </div>
+  <div id="orderList" class="order-list"></div>
+  <div class="pager"><button id="moreOrders" class="btn ghost hidden">Voir plus</button></div>
+</section>
 
 <div id="veil" class="veil hidden"></div>
 <aside id="cart" class="cart hidden" aria-label="Panier">
@@ -88,6 +98,6 @@
 <button id="toTop" class="totop" aria-label="Revenir en haut">↑</button>
 <div id="toasts" class="toasts" aria-live="polite"></div>
 <footer><b>Ammu-Nation</b> — parodie. Univers GTA V © Rockstar Games. Site de démonstration sans lien officiel ; aucune arme n'est vendue.</footer>
-<script src="/app.js?v=4"></script>
+<script src="/app.js?v=5"></script>
 </body>
 </html>

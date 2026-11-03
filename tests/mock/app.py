@@ -1,9 +1,11 @@
 """Faux services Spring pour tester la gateway sans le backend Java : mêmes chemins, mêmes codes HTTP attendus.
 SERVICE=catalog|order. Ne sert qu'à valider la configuration Kong."""
-import json, os, re, uuid, urllib.parse
+import datetime, json, os, re, uuid, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 SERVICE = os.environ.get("SERVICE", "catalog")
+ORDERS = {}   # commandes créées pendant la vie du mock (id -> commande), plus récente en dernier
+MOVES = {"confirm": ({"PENDING"}, "CONFIRMED"), "cancel": ({"PENDING", "CONFIRMED"}, "CANCELLED"), "complete": ({"CONFIRMED"}, "COMPLETED")}
 NS = uuid.UUID("00000000-0000-4000-8000-000000000000")
 
 # Données lues dans le vrai script db/gta-weapons.sql (monté en /db) : le mock sert les mêmes armes que la base.
@@ -51,10 +53,33 @@ class H(BaseHTTPRequestHandler):
             size, pg = int(q.get("size", ["20"])[0]), int(q.get("page", ["0"])[0])
             return self.reply(200, {"content": items[pg * size:(pg + 1) * size], "page": pg, "size": size,
                                     "totalElements": len(items), "totalPages": max(1, -(-len(items) // size))})
+        if SERVICE == "catalog" and method == "GET" and path.startswith("/api/products/"):
+            x = next((x for x in PRODUCTS if x["id"] == path.rsplit("/", 1)[1]), None)
+            return self.reply(200, x) if x else self.reply(404, {"title": "Not Found"})
         if SERVICE == "catalog" and method == "POST" and path == "/api/products":
             return self.reply(201, {"id": str(uuid.uuid4()), "sku": "mock"})
-        if SERVICE == "order" and method == "POST" and path.endswith("/cancel"):
+        m = re.fullmatch(r"/api/orders/([0-9a-f-]{36})(?:/(confirm|cancel|complete))?", path)
+        if SERVICE == "order" and m and m.group(1) not in ORDERS and method == "POST" and m.group(2) == "cancel":
             return self.reply(200, {"status": "CANCELLED"})
+        if SERVICE == "order" and m and (method == "GET") == (m.group(2) is None):
+            o = ORDERS.get(m.group(1))
+            if not o:
+                return self.reply(404, {"title": "Not Found", "detail": "Commande introuvable"})
+            if m.group(2):
+                allowed, to = MOVES[m.group(2)]
+                if o["status"] != to:
+                    if o["status"] not in allowed:
+                        return self.reply(409, {"title": "Conflict", "detail": f"Transition {o['status']} -> {to} interdite"})
+                    o["status"] = to
+            return self.reply(200, o)
+        if SERVICE == "order" and method == "GET" and path == "/api/orders":
+            items = [o for o in reversed(ORDERS.values()) if (not q.get("userId") or o["userId"] == q["userId"][0])
+                     and (not q.get("status") or o["status"] == q["status"][0])]
+            size, pg = int(q.get("size", ["20"])[0]), int(q.get("page", ["0"])[0])
+            return self.reply(200, {"content": items[pg * size:(pg + 1) * size], "page": pg, "size": size,
+                                    "totalElements": len(items), "totalPages": max(1, -(-len(items) // size)),
+                                    # en-têtes reçus, pour vérifier ce que Kong transmet (tests/smoke.sh)
+                                    "authorization": self.headers.get("Authorization"), "consumer": self.headers.get("X-Consumer-Username")})
         if SERVICE == "order" and method == "POST" and path == "/api/orders":
             try:
                 req = json.loads(body_raw or b"{}"); lines = req["items"]; assert req["userId"] and lines
@@ -64,9 +89,11 @@ class H(BaseHTTPRequestHandler):
             its = [{"id": str(uuid.uuid4()), "productId": l["productId"], "productName": by.get(l["productId"], {}).get("name", "?"),
                     "quantity": l["quantity"], "unitPrice": by.get(l["productId"], {}).get("price", 0),
                     "lineTotal": by.get(l["productId"], {}).get("price", 0) * l["quantity"]} for l in lines]
-            return self.reply(201, {"id": str(uuid.uuid4()), "userId": req["userId"], "status": "PENDING",
-                                    "totalAmount": sum(i["lineTotal"] for i in its), "items": its,
-                                    "createdAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"})
+            now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            o = {"id": str(uuid.uuid4()), "userId": req["userId"], "status": "PENDING",
+                 "totalAmount": sum(i["lineTotal"] for i in its), "items": its, "createdAt": now, "updatedAt": now}
+            ORDERS[o["id"]] = o
+            return self.reply(201, o)
         ok = {"catalog": ("/api/products", "/api/categories", "/internal/"), "order": ("/api/orders",)}[SERVICE]
         if not path.startswith(ok):
             return self.reply(404, {"title": "Not Found"})

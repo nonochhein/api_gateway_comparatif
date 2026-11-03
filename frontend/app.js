@@ -37,6 +37,7 @@ function refreshWho() {
   const u = userFromToken();
   $("who").textContent = u ? "● " + u : "";
   $("login").textContent = u ? "Déconnexion" : "Connexion SSO";
+  loadOrders();
 }
 
 /* ---------- Appels API (tous via la gateway) + journal ---------- */
@@ -189,6 +190,109 @@ function renderCart() {
   $("clearCart").disabled = $("checkout").disabled = !count;
   saveCart();
 }
+/* ---------- Mes commandes (order-service, toutes protégées par le jeton) ---------- */
+const STATUS = { PENDING: "En attente", CONFIRMED: "Confirmée", COMPLETED: "Livrée", CANCELLED: "Annulée" };
+const ORDER_SIZE = 5;
+let orders = [], orderPage = 0, orderPages = 1, orderTotal = 0, orderStatus = "";
+const fmtDate = (d) => d ? new Date(d).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" }) : "";
+function renderOrderFilters() {
+  $("orderFilters").innerHTML = "";
+  [["", "Toutes"], ...Object.entries(STATUS)].forEach(([k, label]) => {
+    const b = document.createElement("button");
+    b.className = "chip" + (k === orderStatus ? " on" : ""); b.textContent = label;
+    b.onclick = () => { orderStatus = k; renderOrderFilters(); loadOrders(); };
+    $("orderFilters").appendChild(b);
+  });
+}
+function ordersMessage(html) {
+  $("orderList").innerHTML = `<div class="empty">${html}</div>`;
+  $("moreOrders").classList.add("hidden"); $("ordersInfo").textContent = "";
+}
+async function loadOrders(more) {
+  if (!token) {
+    ordersMessage('<p>Connectez-vous pour voir vos commandes.</p><button class="btn" id="ordersLogin">Connexion SSO</button>');
+    $("ordersLogin").onclick = () => $("login").click();
+    return;
+  }
+  orderPage = more ? orderPage + 1 : 0;
+  const q = new URLSearchParams({ userId: userFromToken(), page: orderPage, size: ORDER_SIZE });
+  if (orderStatus) q.set("status", orderStatus);
+  try {
+    const res = await api("GET", "/api/orders?" + q);
+    if (res.status === 401) { token = null; refreshWho(); return toast("Session expirée : reconnectez-vous.", true); }
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const d = await res.json();
+    orders = (more ? orders : []).concat(d.content || []);
+    orderPages = Math.max(1, d.totalPages || 1); orderTotal = d.totalElements ?? orders.length;
+    renderOrders();
+  } catch (e) {
+    ordersMessage(`<p class="msg err">Commandes indisponibles (${esc(e.message)}). Le service de commandes est-il en panne ?</p>`);
+  }
+}
+function steps(st) {
+  if (st === "CANCELLED") return "";
+  const n = ["PENDING", "CONFIRMED", "COMPLETED"].indexOf(st);
+  return '<span class="steps">' + ["Passée", "Confirmée", "Livrée"].map((l, i) =>
+    (i ? `<i class="${i <= n ? "on" : ""}"></i>` : "") + `<span class="${i <= n ? "on" : ""}">${l}</span>`).join("") + "</span>";
+}
+function renderOrders() {
+  if (!orders.length) {
+    ordersMessage(orderStatus ? `<p>Aucune commande « ${STATUS[orderStatus]} ».</p>`
+      : '<p>Aucune commande pour l\'instant.</p><a class="btn" href="#catalogue" style="text-decoration:none;display:inline-block">Faire ses courses</a>');
+    return;
+  }
+  $("orderList").innerHTML = "";
+  orders.forEach((o) => {
+    const items = o.items || [], n = items.reduce((t, i) => t + i.quantity, 0);
+    const d = document.createElement("article"); d.className = "order " + o.status;
+    d.innerHTML = `<div class="order-head"><div><div class="ref">#${esc(String(o.id).slice(0, 8))}</div><div class="date">${esc(fmtDate(o.createdAt))}</div></div>` +
+      `${steps(o.status) || "<span></span>"}<span class="status ${esc(o.status)}">${esc(STATUS[o.status] || o.status)}</span><span class="sum">${money(o.totalAmount ?? 0)}</span></div>` +
+      `<details><summary>${n} article${n > 1 ? "s" : ""}</summary><table>` +
+      items.map((i) => `<tr><td>${i.quantity} × ${esc(i.productName)}</td><td>${money(i.lineTotal ?? i.unitPrice * i.quantity)}</td></tr>`).join("") +
+      `</table></details><div class="order-actions">` +
+      (o.status === "PENDING" ? '<button class="btn" data-a="confirm">Confirmer et réserver</button>' : "") +
+      (o.status === "CONFIRMED" ? '<button class="btn dark" data-a="complete">Marquer comme livrée</button>' : "") +
+      (o.status === "PENDING" || o.status === "CONFIRMED" ? '<button class="btn ghost dark-ghost" data-a="cancel">Annuler</button>' : "") +
+      '<button class="btn ghost dark-ghost" data-a="reorder">Commander à nouveau</button></div>';
+    d.querySelectorAll("[data-a]").forEach((b) => b.onclick = () => b.dataset.a === "reorder" ? reorder(o) : orderAction(o, b.dataset.a, b));
+    $("orderList").appendChild(d);
+  });
+  $("ordersInfo").textContent = `${orderTotal} commande${orderTotal > 1 ? "s" : ""}`;
+  $("moreOrders").classList.toggle("hidden", orderPage >= orderPages - 1);
+}
+async function orderAction(o, action, btn) {
+  if (action === "cancel" && !confirm(`Annuler la commande #${String(o.id).slice(0, 8)} ?`)) return;
+  btn.disabled = true;
+  let res, body = {};
+  try { res = await api("POST", `/api/orders/${o.id}/${action}`); body = await res.json().catch(() => ({})); }
+  catch (e) { btn.disabled = false; return toast("Gateway injoignable — réessayez.", true); }
+  if (res.ok) {
+    Object.assign(o, body); renderOrders();
+    toast({ confirm: "Commande confirmée : stock réservé.", cancel: "Commande annulée.", complete: "Commande livrée. Bonne chasse." }[action]);
+    if (action !== "complete") loadProducts();             // le stock du catalogue a bougé
+  } else {
+    btn.disabled = false;
+    if (res.status === 401) { token = null; refreshWho(); }
+    toast(`Erreur ${res.status} — ${body.detail || body.title || "action impossible"}`, true);
+    if (res.status === 409) loadOrders();                   // état changé ailleurs : on recharge
+  }
+}
+async function reorder(o) {
+  let added = 0;
+  for (const i of o.items || []) {
+    try {
+      const res = await api("GET", "/api/products/" + i.productId);
+      if (!res.ok) continue;
+      const p = await res.json();
+      const cur = cart[p.id] ? cart[p.id].qty : 0, qty = Math.min(cur + i.quantity, p.stockQuantity);
+      if (qty > cur && p.active !== false) { cart[p.id] = { p, qty }; added += qty - cur; }
+    } catch (e) {}
+  }
+  renderCart();
+  if (!added) return toast("Ces armes ne sont plus disponibles.", true);
+  toast(`${added} article${added > 1 ? "s" : ""} remis dans le panier`); openCart(true);
+}
+
 function say(msg, ok) { $("orderMsg").textContent = msg; $("orderMsg").className = "msg " + (ok ? "ok" : "err"); }
 
 async function checkout() {
@@ -204,7 +308,8 @@ async function checkout() {
   if (res.status === 201 || res.status === 200) {
     cart = {}; renderCart();
     say(`Commande ${String(body.id || "").slice(0, 8)} enregistrée — statut ${body.status}, total ${money(body.totalAmount ?? 0)}.`, true);
-    toast("Commande enregistrée. Merci de votre confiance, citoyen.");
+    toast("Commande enregistrée. Confirmez-la dans « Mes commandes ».");
+    orderStatus = ""; renderOrderFilters(); loadOrders();
     loadProducts();
   } else if (res.status === 401) { token = null; refreshWho(); say("401 — jeton absent, invalide ou expiré.", false); }
   else if (res.status === 429) say("429 — trop de requêtes, réessayez dans une seconde.", false);
@@ -221,6 +326,8 @@ $("closeCart").onclick = () => openCart(false);
 $("veil").onclick = () => openCart(false);
 $("clearCart").onclick = () => { if (confirm("Vider le panier ?")) { cart = {}; renderCart(); } };
 $("clearLog").onclick = () => { $("log").innerHTML = ""; };
+$("refreshOrders").onclick = () => loadOrders();
+$("moreOrders").onclick = () => loadOrders(true);
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") { if (!$("modal").classList.contains("hidden")) closeProduct(); else openCart(false); }
   if (e.key === "/" && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $("search").focus(); }
@@ -233,5 +340,5 @@ $("checkout").onclick = checkout;
 $("prev").onclick = () => { page--; loadProducts(); toCatalogue(); };
 $("next").onclick = () => { page++; loadProducts(); toCatalogue(); };
 let tm; $("search").oninput = (e) => { clearTimeout(tm); tm = setTimeout(() => { search = e.target.value.trim(); page = 0; loadProducts(); }, 300); };
-refreshWho(); renderCart();
+renderOrderFilters(); refreshWho(); renderCart();
 Promise.all([loadPhotos(), loadCategories()]).then(loadProducts);

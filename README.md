@@ -27,6 +27,9 @@ Une console en bas de page affiche statut et `X-Request-Id` de chaque appel.
 Curseur 8 bit **noir et blanc** : **poing fermé** en navigation, **doigt d'honneur** dès qu'on survole un élément cliquable (liens, boutons, filtres, fiches produit, champ de recherche) et au clic (un petit sprite jaillit, y compris au tactile).
 Les curseurs sont générés par `python3 scripts/make_cursors.py` (PNG 32×32 en pixel art, modifiables dans le script).
 
+**Mes commandes** (connecté) : liste des commandes de l'utilisateur du jeton (`GET /api/orders?userId=…`), filtre par statut, détail des lignes, actions *Confirmer et réserver* (`/confirm`, réserve le stock), *Marquer comme livrée* (`/complete`), *Annuler* (`/cancel`, libère le stock) et *Commander à nouveau* (remet les armes encore disponibles dans le panier via `GET /api/products/{id}`).
+Le backend ne vérifie pas que la commande appartient bien à l'utilisateur du jeton : le filtre `userId` est fait côté site.
+
 Autres fonctions du site : fiche produit au clic sur l'image ou le nom (choix de la quantité), panier conservé dans le navigateur (`localStorage`) avec bouton « Vider », raccourci `/` pour la recherche, `Échap` pour fermer, bouton de retour en haut, console gateway effaçable.
 
 Images : chaque produit affiche l'icône indiquée par son `imageUrl` (`/images/weapons/*.png`), ou une silhouette SVG dessinée pour le projet (armure, munitions, produits créés sans image). Pour remplacer une image par une photo, déposer les fichiers dans `frontend/images/photos/` et les lister dans
