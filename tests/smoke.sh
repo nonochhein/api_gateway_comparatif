@@ -18,6 +18,7 @@ jid() { python3 -c 'import sys,json;print(json.load(sys.stdin).get("id",""))' 2>
 ok2xx() { case "$2" in 2??) echo "PASS  $1 ($2)";; *) echo "FAIL  $1 : attendu 2xx, reçu $2"; fail=1;; esac; }
 t "site (page d'accueil)"               200 GET    /
 t "site (image d'arme)"                200 GET    /images/pistol.svg
+t "site (icône d'arme du jeu)"         200 GET    /images/weapons/weapon_pistol.png
 t "catalogue public (produits)"            200 GET    /api/products
 t "catalogue public (catégories)"          200 GET    /api/categories
 t "création produit sans jeton"            401 POST   /api/products "" '{"name":"x"}'

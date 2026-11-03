@@ -1,0 +1,1102 @@
+[
+  {
+    "category": "Melee",
+    "id": "weapon_dagger",
+    "name": "Antique Cavalry Dagger",
+    "hash": "0x92A27487",
+    "file": "icons/weapon_dagger.png",
+    "width": 193,
+    "height": 62,
+    "source": "https://wiki.rage.mp/w/images/f/f5/Antique-cavalry-dagger-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_bat",
+    "name": "Baseball Bat",
+    "hash": "0x958A4A8F",
+    "file": "icons/weapon_bat.png",
+    "width": 303,
+    "height": 36,
+    "source": "https://wiki.rage.mp/w/images/8/8b/Baseball-bat-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_bottle",
+    "name": "Broken Bottle",
+    "hash": "0xF9E6AA4B",
+    "file": "icons/weapon_bottle.png",
+    "width": 152,
+    "height": 49,
+    "source": "https://wiki.rage.mp/w/images/5/5b/Broken-bottle-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_crowbar",
+    "name": "Crowbar",
+    "hash": "0x84BD7BFD",
+    "file": "icons/weapon_crowbar.png",
+    "width": 260,
+    "height": 68,
+    "source": "https://wiki.rage.mp/w/images/8/8a/Crowbar-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_unarmed",
+    "name": "Fist",
+    "hash": "0xA2719263",
+    "file": "icons/weapon_unarmed.png",
+    "width": 84,
+    "height": 84,
+    "source": "https://wiki.rage.mp/w/images/b/b7/Fist-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_flashlight",
+    "name": "Flashlight",
+    "hash": "0x8BB05FD7",
+    "file": "icons/weapon_flashlight.png",
+    "width": 184,
+    "height": 35,
+    "source": "https://wiki.rage.mp/w/images/8/85/Flashlight-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_golfclub",
+    "name": "Golf Club",
+    "hash": "0x440E4788",
+    "file": "icons/weapon_golfclub.png",
+    "width": 293,
+    "height": 42,
+    "source": "https://wiki.rage.mp/w/images/c/cb/Golf-club-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_hammer",
+    "name": "Hammer",
+    "hash": "0x4E875F73",
+    "file": "icons/weapon_hammer.png",
+    "width": 185,
+    "height": 73,
+    "source": "https://wiki.rage.mp/w/images/e/ec/Hammer-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_hatchet",
+    "name": "Hatchet",
+    "hash": "0xF9DCBF2D",
+    "file": "icons/weapon_hatchet.png",
+    "width": 254,
+    "height": 92,
+    "source": "https://wiki.rage.mp/w/images/e/eb/Hatchet-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_knuckle",
+    "name": "Brass Knuckles",
+    "hash": "0xD8DF3C3C",
+    "file": "icons/weapon_knuckle.png",
+    "width": 126,
+    "height": 84,
+    "source": "https://wiki.rage.mp/w/images/b/b7/Knuckles-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_knife",
+    "name": "Knife",
+    "hash": "0x99B507EA",
+    "file": "icons/weapon_knife.png",
+    "width": 185,
+    "height": 43,
+    "source": "https://wiki.rage.mp/w/images/8/8c/Knife-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_machete",
+    "name": "Machete",
+    "hash": "0xDD5DF8D9",
+    "file": "icons/weapon_machete.png",
+    "width": 355,
+    "height": 66,
+    "source": "https://wiki.rage.mp/w/images/d/dc/Machete-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_switchblade",
+    "name": "Switchblade",
+    "hash": "0xDFE37640",
+    "file": "icons/weapon_switchblade.png",
+    "width": 200,
+    "height": 43,
+    "source": "https://wiki.rage.mp/w/images/c/ce/Switch-blade-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_nightstick",
+    "name": "Nightstick",
+    "hash": "0x678B81B1",
+    "file": "icons/weapon_nightstick.png",
+    "width": 272,
+    "height": 76,
+    "source": "https://wiki.rage.mp/w/images/e/e6/Nightstick-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_wrench",
+    "name": "Pipe Wrench",
+    "hash": "0x19044EE0",
+    "file": "icons/weapon_wrench.png",
+    "width": 273,
+    "height": 58,
+    "source": "https://wiki.rage.mp/w/images/2/22/Pipe-wrench-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_battleaxe",
+    "name": "Battle Axe",
+    "hash": "0xCD274149",
+    "file": "icons/weapon_battleaxe.png",
+    "width": 248,
+    "height": 113,
+    "source": "https://wiki.rage.mp/w/images/3/3b/Battle-axe-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_poolcue",
+    "name": "Pool Cue",
+    "hash": "0x94117305",
+    "file": "icons/weapon_poolcue.png",
+    "width": 280,
+    "height": 22,
+    "source": "https://wiki.rage.mp/w/images/3/3a/Pool-cue-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_stone_hatchet",
+    "name": "Stone Hatchet",
+    "hash": "0x3813FC08",
+    "file": "icons/weapon_stone_hatchet.png",
+    "width": 242,
+    "height": 109,
+    "source": "https://wiki.rage.mp/w/images/2/21/Stone-hatchet-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_candycane",
+    "name": "Candy Cane",
+    "hash": "0x6589186A",
+    "file": "icons/weapon_candycane.png",
+    "width": 234,
+    "height": 76,
+    "source": "https://wiki.rage.mp/w/images/5/5c/Candy-cane-icon.png"
+  },
+  {
+    "category": "Melee",
+    "id": "weapon_stunrod",
+    "name": "The shocker",
+    "hash": "0xDAC00025",
+    "file": "icons/weapon_stunrod.png",
+    "width": 318,
+    "height": 68,
+    "source": "https://wiki.rage.mp/w/images/1/18/The-shocker-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_pistol",
+    "name": "Pistol",
+    "hash": "0x1B06D571",
+    "file": "icons/weapon_pistol.png",
+    "width": 128,
+    "height": 80,
+    "source": "https://wiki.rage.mp/w/images/9/95/Pistol-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_pistol_mk2",
+    "name": "Pistol Mk II",
+    "hash": "0xBFE256D4",
+    "file": "icons/weapon_pistol_mk2.png",
+    "width": 142,
+    "height": 98,
+    "source": "https://wiki.rage.mp/w/images/4/43/Pistol-mk2-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_combatpistol",
+    "name": "Combat Pistol",
+    "hash": "0x5EF9FEC4",
+    "file": "icons/weapon_combatpistol.png",
+    "width": 112,
+    "height": 80,
+    "source": "https://wiki.rage.mp/w/images/1/16/Combat-pistol-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_appistol",
+    "name": "AP Pistol",
+    "hash": "0x22D8FE39",
+    "file": "icons/weapon_appistol.png",
+    "width": 158,
+    "height": 78,
+    "source": "https://wiki.rage.mp/w/images/4/4d/Appistol-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_stungun",
+    "name": "Stun Gun",
+    "hash": "0x3656C8C1",
+    "file": "icons/weapon_stungun.png",
+    "width": 115,
+    "height": 74,
+    "source": "https://wiki.rage.mp/w/images/3/3c/Stungun-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_pistol50",
+    "name": "Pistol .50",
+    "hash": "0x99AEEB3B",
+    "file": "icons/weapon_pistol50.png",
+    "width": 136,
+    "height": 93,
+    "source": "https://wiki.rage.mp/w/images/c/c5/Pistol.50-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_snspistol",
+    "name": "SNS Pistol",
+    "hash": "0xBFD21232",
+    "file": "icons/weapon_snspistol.png",
+    "width": 92,
+    "height": 77,
+    "source": "https://wiki.rage.mp/w/images/9/96/Sns-pistol-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_snspistol_mk2",
+    "name": "SNS Pistol Mk II",
+    "hash": "0x88374054",
+    "file": "icons/weapon_snspistol_mk2.png",
+    "width": 93,
+    "height": 76,
+    "source": "https://wiki.rage.mp/w/images/1/16/Sns-pistol-mk2-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_heavypistol",
+    "name": "Heavy Pistol",
+    "hash": "0xD205520E",
+    "file": "icons/weapon_heavypistol.png",
+    "width": 130,
+    "height": 96,
+    "source": "https://wiki.rage.mp/w/images/7/78/Heavy-pistol-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_vintagepistol",
+    "name": "Vintage Pistol",
+    "hash": "0x83839C4",
+    "file": "icons/weapon_vintagepistol.png",
+    "width": 153,
+    "height": 82,
+    "source": "https://wiki.rage.mp/w/images/9/97/Vintage-pistol-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_flaregun",
+    "name": "Flare Gun",
+    "hash": "0x47757124",
+    "file": "icons/weapon_flaregun.png",
+    "width": 140,
+    "height": 85,
+    "source": "https://wiki.rage.mp/w/images/0/0d/Flaregun-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_marksmanpistol",
+    "name": "Marksman Pistol",
+    "hash": "0xDC4DB296",
+    "file": "icons/weapon_marksmanpistol.png",
+    "width": 232,
+    "height": 98,
+    "source": "https://wiki.rage.mp/w/images/4/47/Marksman-pistol-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_revolver",
+    "name": "Heavy Revolver",
+    "hash": "0xC1B3C3D1",
+    "file": "icons/weapon_revolver.png",
+    "width": 203,
+    "height": 98,
+    "source": "https://wiki.rage.mp/w/images/9/93/Heavy-revolver-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_revolver_mk2",
+    "name": "Heavy Revolver Mk II",
+    "hash": "0xCB96392F",
+    "file": "icons/weapon_revolver_mk2.png",
+    "width": 203,
+    "height": 100,
+    "source": "https://wiki.rage.mp/w/images/c/c0/Heavy-revolver-mk2-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_doubleaction",
+    "name": "Double Action Revolver",
+    "hash": "0x97EA20B8",
+    "file": "icons/weapon_doubleaction.png",
+    "width": 218,
+    "height": 95,
+    "source": "https://wiki.rage.mp/w/images/4/45/Double-action-revolver-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_raypistol",
+    "name": "Up-n-Atomizer",
+    "hash": "0xAF3696A1",
+    "file": "icons/weapon_raypistol.png",
+    "width": 241,
+    "height": 124,
+    "source": "https://wiki.rage.mp/w/images/8/89/Up-n-atomizer-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_ceramicpistol",
+    "name": "Ceramic Pistol",
+    "hash": "0x2B5EF5EC",
+    "file": "icons/weapon_ceramicpistol.png",
+    "width": 134,
+    "height": 97,
+    "source": "https://wiki.rage.mp/w/images/a/ad/Ceramic-pistol-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_navyrevolver",
+    "name": "Navy Revolver",
+    "hash": "0x917F6C8C",
+    "file": "icons/weapon_navyrevolver.png",
+    "width": 282,
+    "height": 100,
+    "source": "https://wiki.rage.mp/w/images/1/15/Navy-revolver-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_gadgetpistol",
+    "name": "Perico Pistol",
+    "hash": "0x57A4368C",
+    "file": "icons/weapon_gadgetpistol.png",
+    "width": 205,
+    "height": 101,
+    "source": "https://wiki.rage.mp/w/images/3/31/Perico-pistol-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_stungun_mp",
+    "name": "Stun Gun",
+    "hash": "0x45CD9CF3",
+    "file": "icons/weapon_stungun_mp.png",
+    "width": 115,
+    "height": 74,
+    "source": "https://wiki.rage.mp/w/images/3/3c/Stungun-icon.png"
+  },
+  {
+    "category": "Handguns",
+    "id": "weapon_pistolxm3",
+    "name": "WM 29 Pistol",
+    "hash": "0x1BC4FDB9",
+    "file": "icons/weapon_pistolxm3.png",
+    "width": 110,
+    "height": 80,
+    "source": "https://wiki.rage.mp/w/images/c/cf/WM-29-pistol-icon.png"
+  },
+  {
+    "category": "Submachine Guns",
+    "id": "weapon_microsmg",
+    "name": "Micro SMG",
+    "hash": "0x13532244",
+    "file": "icons/weapon_microsmg.png",
+    "width": 185,
+    "height": 74,
+    "source": "https://wiki.rage.mp/w/images/3/3a/Micro-smg-icon.png"
+  },
+  {
+    "category": "Submachine Guns",
+    "id": "weapon_smg",
+    "name": "SMG",
+    "hash": "0x2BE6766B",
+    "file": "icons/weapon_smg.png",
+    "width": 185,
+    "height": 63,
+    "source": "https://wiki.rage.mp/w/images/3/30/Smg-icon.png"
+  },
+  {
+    "category": "Submachine Guns",
+    "id": "weapon_smg_mk2",
+    "name": "SMG Mk II",
+    "hash": "0x78A97CD0",
+    "file": "icons/weapon_smg_mk2.png",
+    "width": 192,
+    "height": 115,
+    "source": "https://wiki.rage.mp/w/images/d/d1/Smg-mk2-icon.png"
+  },
+  {
+    "category": "Submachine Guns",
+    "id": "weapon_assaultsmg",
+    "name": "Assault SMG",
+    "hash": "0xEFE7E2DF",
+    "file": "icons/weapon_assaultsmg.png",
+    "width": 185,
+    "height": 68,
+    "source": "https://wiki.rage.mp/w/images/3/30/Assault-smg-icon.png"
+  },
+  {
+    "category": "Submachine Guns",
+    "id": "weapon_combatpdw",
+    "name": "Combat PDW",
+    "hash": "0x0A3D4D34",
+    "file": "icons/weapon_combatpdw.png",
+    "width": 185,
+    "height": 64,
+    "source": "https://wiki.rage.mp/w/images/4/45/Combat-pdw-icon.png"
+  },
+  {
+    "category": "Submachine Guns",
+    "id": "weapon_machinepistol",
+    "name": "Machine Pistol",
+    "hash": "0xDB1AA450",
+    "file": "icons/weapon_machinepistol.png",
+    "width": 185,
+    "height": 98,
+    "source": "https://wiki.rage.mp/w/images/2/24/Machine-pistol-icon.png"
+  },
+  {
+    "category": "Submachine Guns",
+    "id": "weapon_minismg",
+    "name": "Mini SMG",
+    "hash": "0xBD248B55",
+    "file": "icons/weapon_minismg.png",
+    "width": 185,
+    "height": 107,
+    "source": "https://wiki.rage.mp/w/images/d/d3/Mini-smg-icon.png"
+  },
+  {
+    "category": "Submachine Guns",
+    "id": "weapon_raycarbine",
+    "name": "Unholy Hellbringer",
+    "hash": "0x476BF155",
+    "file": "icons/weapon_raycarbine.png",
+    "width": 314,
+    "height": 120,
+    "source": "https://wiki.rage.mp/w/images/8/8f/Unholy-hellbringer-icon.png"
+  },
+  {
+    "category": "Submachine Guns",
+    "id": "weapon_tecpistol",
+    "name": "Tactical SMG",
+    "hash": "0x14E5AFD5",
+    "file": "icons/weapon_tecpistol.png",
+    "width": 153,
+    "height": 91,
+    "source": "https://wiki.rage.mp/w/images/b/bc/Tactical-smg-icon.png"
+  },
+  {
+    "category": "Shotguns",
+    "id": "weapon_pumpshotgun",
+    "name": "Pump Shotgun",
+    "hash": "0x1D073A89",
+    "file": "icons/weapon_pumpshotgun.png",
+    "width": 185,
+    "height": 40,
+    "source": "https://wiki.rage.mp/w/images/0/09/Pump-shotgun-icon.png"
+  },
+  {
+    "category": "Shotguns",
+    "id": "weapon_pumpshotgun_mk2",
+    "name": "Pump Shotgun Mk II",
+    "hash": "0x555AF99A",
+    "file": "icons/weapon_pumpshotgun_mk2.png",
+    "width": 459,
+    "height": 98,
+    "source": "https://wiki.rage.mp/w/images/6/69/Pump-shotgun-mk2-icon.png"
+  },
+  {
+    "category": "Shotguns",
+    "id": "weapon_sawnoffshotgun",
+    "name": "Sawed-Off Shotgun",
+    "hash": "0x7846A318",
+    "file": "icons/weapon_sawnoffshotgun.png",
+    "width": 185,
+    "height": 67,
+    "source": "https://wiki.rage.mp/w/images/b/ba/Sawed-off-shotgun-icon.png"
+  },
+  {
+    "category": "Shotguns",
+    "id": "weapon_assaultshotgun",
+    "name": "Assault Shotgun",
+    "hash": "0xE284C527",
+    "file": "icons/weapon_assaultshotgun.png",
+    "width": 185,
+    "height": 54,
+    "source": "https://wiki.rage.mp/w/images/e/e3/Assault-shotgun-icon.png"
+  },
+  {
+    "category": "Shotguns",
+    "id": "weapon_bullpupshotgun",
+    "name": "Bullpup Shotgun",
+    "hash": "0x9D61E50F",
+    "file": "icons/weapon_bullpupshotgun.png",
+    "width": 185,
+    "height": 60,
+    "source": "https://wiki.rage.mp/w/images/7/7f/Bullpup-shotgun-icon.png"
+  },
+  {
+    "category": "Shotguns",
+    "id": "weapon_heavyshotgun",
+    "name": "Heavy Shotgun",
+    "hash": "0x3AABBBAA",
+    "file": "icons/weapon_heavyshotgun.png",
+    "width": 185,
+    "height": 46,
+    "source": "https://wiki.rage.mp/w/images/5/5d/Heavy-shotgun-icon.png"
+  },
+  {
+    "category": "Shotguns",
+    "id": "weapon_dbshotgun",
+    "name": "Double Barrel Shotgun",
+    "hash": "0xEF951FBB",
+    "file": "icons/weapon_dbshotgun.png",
+    "width": 185,
+    "height": 67,
+    "source": "https://wiki.rage.mp/w/images/8/8d/Double-barrel-shotgun-icon.png"
+  },
+  {
+    "category": "Shotguns",
+    "id": "weapon_autoshotgun",
+    "name": "Sweeper Shotgun",
+    "hash": "0x12E82D3D",
+    "file": "icons/weapon_autoshotgun.png",
+    "width": 185,
+    "height": 94,
+    "source": "https://wiki.rage.mp/w/images/a/a8/Sweeper-shotgun-icon.png"
+  },
+  {
+    "category": "Shotguns",
+    "id": "weapon_combatshotgun",
+    "name": "Combat Shotgun",
+    "hash": "0x5A96BA4",
+    "file": "icons/weapon_combatshotgun.png",
+    "width": 409,
+    "height": 93,
+    "source": "https://wiki.rage.mp/w/images/5/50/Combat-shotgun-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_assaultrifle",
+    "name": "Assault Rifle",
+    "hash": "0xBFEFFF6D",
+    "file": "icons/weapon_assaultrifle.png",
+    "width": 405,
+    "height": 126,
+    "source": "https://wiki.rage.mp/w/images/6/61/Assault-rifle-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_assaultrifle_mk2",
+    "name": "Assault Rifle Mk II",
+    "hash": "0x394F415C",
+    "file": "icons/weapon_assaultrifle_mk2.png",
+    "width": 404,
+    "height": 124,
+    "source": "https://wiki.rage.mp/w/images/6/63/Assault-rifle-mk2-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_carbinerifle",
+    "name": "Carbine Rifle",
+    "hash": "0x83BF0278",
+    "file": "icons/weapon_carbinerifle.png",
+    "width": 370,
+    "height": 129,
+    "source": "https://wiki.rage.mp/w/images/7/73/Carbine-rifle-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_carbinerifle_mk2",
+    "name": "Carbine Rifle Mk II",
+    "hash": "0xFAD1F1C9",
+    "file": "icons/weapon_carbinerifle_mk2.png",
+    "width": 324,
+    "height": 112,
+    "source": "https://wiki.rage.mp/w/images/3/3f/Carbine-rifle-mk2-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_advancedrifle",
+    "name": "Advanced Rifle",
+    "hash": "0xAF113F99",
+    "file": "icons/weapon_advancedrifle.png",
+    "width": 296,
+    "height": 114,
+    "source": "https://wiki.rage.mp/w/images/a/ae/Advanced-rifle-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_specialcarbine",
+    "name": "Special Carbine",
+    "hash": "0xC0A3098D",
+    "file": "icons/weapon_specialcarbine.png",
+    "width": 310,
+    "height": 115,
+    "source": "https://wiki.rage.mp/w/images/b/b7/Special-carbine-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_specialcarbine_mk2",
+    "name": "Special Carbine Mk II",
+    "hash": "0x969C3D67",
+    "file": "icons/weapon_specialcarbine_mk2.png",
+    "width": 313,
+    "height": 113,
+    "source": "https://wiki.rage.mp/w/images/3/34/Special-carbine-mk2-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_bullpuprifle",
+    "name": "Bullpup Rifle",
+    "hash": "0x7F229F94",
+    "file": "icons/weapon_bullpuprifle.png",
+    "width": 318,
+    "height": 122,
+    "source": "https://wiki.rage.mp/w/images/0/09/Bullpup-rifle-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_bullpuprifle_mk2",
+    "name": "Bullpup Rifle Mk II",
+    "hash": "0x84D6FAFD",
+    "file": "icons/weapon_bullpuprifle_mk2.png",
+    "width": 318,
+    "height": 138,
+    "source": "https://wiki.rage.mp/w/images/e/e1/Bullpup-rifle-mk2-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_compactrifle",
+    "name": "Compact Rifle",
+    "hash": "0x624FE830",
+    "file": "icons/weapon_compactrifle.png",
+    "width": 294,
+    "height": 166,
+    "source": "https://wiki.rage.mp/w/images/c/c9/Compact-rifle-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_militaryrifle",
+    "name": "Military Rifle",
+    "hash": "0x9D1F17E6",
+    "file": "icons/weapon_militaryrifle.png",
+    "width": 400,
+    "height": 124,
+    "source": "https://wiki.rage.mp/w/images/0/01/Military-rifle-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_heavyrifle",
+    "name": "Heavy Rifle",
+    "hash": "0xC78D71B4",
+    "file": "icons/weapon_heavyrifle.png",
+    "width": 425,
+    "height": 150,
+    "source": "https://wiki.rage.mp/w/images/2/20/Heavy-rifle-icon.png"
+  },
+  {
+    "category": "Assault Rifles",
+    "id": "weapon_tacticalrifle",
+    "name": "Tactical Rifle",
+    "hash": "0xD1D5F52B",
+    "file": "icons/weapon_tacticalrifle.png",
+    "width": 445,
+    "height": 120,
+    "source": "https://wiki.rage.mp/w/images/e/e8/Tactical-rifle-icon.png"
+  },
+  {
+    "category": "Light Machine Guns",
+    "id": "weapon_mg",
+    "name": "MG",
+    "hash": "0x9D07F764",
+    "file": "icons/weapon_mg.png",
+    "width": 430,
+    "height": 110,
+    "source": "https://wiki.rage.mp/w/images/9/98/Mg-icon.png"
+  },
+  {
+    "category": "Light Machine Guns",
+    "id": "weapon_combatmg",
+    "name": "Combat MG",
+    "hash": "0x7FD62962",
+    "file": "icons/weapon_combatmg.png",
+    "width": 380,
+    "height": 112,
+    "source": "https://wiki.rage.mp/w/images/9/94/Combat-mg-icon.png"
+  },
+  {
+    "category": "Light Machine Guns",
+    "id": "weapon_combatmg_mk2",
+    "name": "Combat MG Mk II",
+    "hash": "0xDBBD7280",
+    "file": "icons/weapon_combatmg_mk2.png",
+    "width": 410,
+    "height": 122,
+    "source": "https://wiki.rage.mp/w/images/3/31/Combat-mg-mk2-icon.png"
+  },
+  {
+    "category": "Light Machine Guns",
+    "id": "weapon_gusenberg",
+    "name": "Gusenberg Sweeper",
+    "hash": "0x61012683",
+    "file": "icons/weapon_gusenberg.png",
+    "width": 438,
+    "height": 117,
+    "source": "https://wiki.rage.mp/w/images/8/8f/Gusenberg-sweeper-icon.png"
+  },
+  {
+    "category": "Sniper Rifles",
+    "id": "weapon_sniperrifle",
+    "name": "Sniper Rifle",
+    "hash": "0x05FC3C11",
+    "file": "icons/weapon_sniperrifle.png",
+    "width": 506,
+    "height": 109,
+    "source": "https://wiki.rage.mp/w/images/e/ec/Sniper-rifle-icon.png"
+  },
+  {
+    "category": "Sniper Rifles",
+    "id": "weapon_heavysniper",
+    "name": "Heavy Sniper",
+    "hash": "0x0C472FE2",
+    "file": "icons/weapon_heavysniper.png",
+    "width": 490,
+    "height": 121,
+    "source": "https://wiki.rage.mp/w/images/5/54/Heavy-sniper-icon.png"
+  },
+  {
+    "category": "Sniper Rifles",
+    "id": "weapon_heavysniper_mk2",
+    "name": "Heavy Sniper Mk II",
+    "hash": "0xA914799",
+    "file": "icons/weapon_heavysniper_mk2.png",
+    "width": 479,
+    "height": 128,
+    "source": "https://wiki.rage.mp/w/images/c/cf/Heavy-sniper-mk2-icon.png"
+  },
+  {
+    "category": "Sniper Rifles",
+    "id": "weapon_marksmanrifle",
+    "name": "Marksman Rifle",
+    "hash": "0xC734385A",
+    "file": "icons/weapon_marksmanrifle.png",
+    "width": 432,
+    "height": 119,
+    "source": "https://wiki.rage.mp/w/images/2/22/Marksman-rifle-icon.png"
+  },
+  {
+    "category": "Sniper Rifles",
+    "id": "weapon_marksmanrifle_mk2",
+    "name": "Marksman Rifle Mk II",
+    "hash": "0x6A6C02E0",
+    "file": "icons/weapon_marksmanrifle_mk2.png",
+    "width": 425,
+    "height": 123,
+    "source": "https://wiki.rage.mp/w/images/1/17/Marksman-rifle-mk2-icon.png"
+  },
+  {
+    "category": "Sniper Rifles",
+    "id": "weapon_precisionrifle",
+    "name": "Precision Rifle",
+    "hash": "0x6E7DDDEC",
+    "file": "icons/weapon_precisionrifle.png",
+    "width": 493,
+    "height": 84,
+    "source": "https://wiki.rage.mp/w/images/5/5b/Precision-rifle-icon.png"
+  },
+  {
+    "category": "Sniper Rifles",
+    "id": "weapon_musket",
+    "name": "Musket",
+    "hash": "0xA89CB99E",
+    "file": "icons/weapon_musket.png",
+    "width": 185,
+    "height": 34,
+    "source": "https://wiki.rage.mp/w/images/8/8c/Musket-icon.png"
+  },
+  {
+    "category": "Heavy Weapons",
+    "id": "weapon_rpg",
+    "name": "RPG",
+    "hash": "0xB1CA77B1",
+    "file": "icons/weapon_rpg.png",
+    "width": 582,
+    "height": 102,
+    "source": "https://wiki.rage.mp/w/images/7/7d/Rocket-launcher-icon.png"
+  },
+  {
+    "category": "Heavy Weapons",
+    "id": "weapon_grenadelauncher",
+    "name": "Grenade Launcher",
+    "hash": "0xA284510B",
+    "file": "icons/weapon_grenadelauncher.png",
+    "width": 381,
+    "height": 120,
+    "source": "https://wiki.rage.mp/w/images/a/ae/Grenade-launcher-icon.png"
+  },
+  {
+    "category": "Heavy Weapons",
+    "id": "weapon_grenadelauncher_smoke",
+    "name": "Grenade Launcher Smoke",
+    "hash": "0x4DD2DC56",
+    "file": "icons/weapon_grenadelauncher_smoke.png",
+    "width": 381,
+    "height": 120,
+    "source": "https://wiki.rage.mp/w/images/a/ae/Grenade-launcher-icon.png"
+  },
+  {
+    "category": "Heavy Weapons",
+    "id": "weapon_minigun",
+    "name": "Minigun",
+    "hash": "0x42BF8A85",
+    "file": "icons/weapon_minigun.png",
+    "width": 476,
+    "height": 154,
+    "source": "https://wiki.rage.mp/w/images/8/8b/Minigun-icon.png"
+  },
+  {
+    "category": "Heavy Weapons",
+    "id": "weapon_firework",
+    "name": "Firework Launcher",
+    "hash": "0x7F7497E5",
+    "file": "icons/weapon_firework.png",
+    "width": 586,
+    "height": 105,
+    "source": "https://wiki.rage.mp/w/images/5/54/Firework-launcher-icon.png"
+  },
+  {
+    "category": "Heavy Weapons",
+    "id": "weapon_railgun",
+    "name": "Railgun",
+    "hash": "0x6D544C99",
+    "file": "icons/weapon_railgun.png",
+    "width": 408,
+    "height": 101,
+    "source": "https://wiki.rage.mp/w/images/a/ad/Railgun-icon.png"
+  },
+  {
+    "category": "Heavy Weapons",
+    "id": "weapon_hominglauncher",
+    "name": "Homing Launcher",
+    "hash": "0x63AB0442",
+    "file": "icons/weapon_hominglauncher.png",
+    "width": 545,
+    "height": 120,
+    "source": "https://wiki.rage.mp/w/images/1/14/Homing-launcher-icon.png"
+  },
+  {
+    "category": "Heavy Weapons",
+    "id": "weapon_compactlauncher",
+    "name": "Compact Grenade Launcher",
+    "hash": "0x0781FE4A",
+    "file": "icons/weapon_compactlauncher.png",
+    "width": 194,
+    "height": 112,
+    "source": "https://wiki.rage.mp/w/images/0/0d/Grenade-compact-launcher-icon.png"
+  },
+  {
+    "category": "Heavy Weapons",
+    "id": "weapon_rayminigun",
+    "name": "Widowmaker",
+    "hash": "0xB62D1F67",
+    "file": "icons/weapon_rayminigun.png",
+    "width": 355,
+    "height": 111,
+    "source": "https://wiki.rage.mp/w/images/e/ec/Widowmaker-icon.png"
+  },
+  {
+    "category": "Heavy Weapons",
+    "id": "weapon_emplauncher",
+    "name": "Compact EMP Launcher",
+    "hash": "0xDB26713A",
+    "file": "icons/weapon_emplauncher.png",
+    "width": 192,
+    "height": 110,
+    "source": "https://wiki.rage.mp/w/images/e/ed/EMP-launcher-icon.png"
+  },
+  {
+    "category": "Heavy Weapons",
+    "id": "weapon_railgunxm3",
+    "name": "Railgun",
+    "hash": "0xFEA23564",
+    "file": "icons/weapon_railgunxm3.png",
+    "width": 408,
+    "height": 101,
+    "source": "https://wiki.rage.mp/w/images/a/ad/Railgun-icon.png"
+  },
+  {
+    "category": "Throwables",
+    "id": "weapon_grenade",
+    "name": "Grenade",
+    "hash": "0x93E220BD",
+    "file": "icons/weapon_grenade.png",
+    "width": 64,
+    "height": 93,
+    "source": "https://wiki.rage.mp/w/images/5/54/Grenade-icon.png"
+  },
+  {
+    "category": "Throwables",
+    "id": "weapon_bzgas",
+    "name": "BZ Gas",
+    "hash": "0xA0973D5E",
+    "file": "icons/weapon_bzgas.png",
+    "width": 60,
+    "height": 129,
+    "source": "https://wiki.rage.mp/w/images/d/d3/Bz-gas-icon.png"
+  },
+  {
+    "category": "Throwables",
+    "id": "weapon_molotov",
+    "name": "Molotov Cocktail",
+    "hash": "0x24B17070",
+    "file": "icons/weapon_molotov.png",
+    "width": 182,
+    "height": 182,
+    "source": "https://wiki.rage.mp/w/images/4/46/Molotov-icon.png"
+  },
+  {
+    "category": "Throwables",
+    "id": "weapon_stickybomb",
+    "name": "Sticky Bomb",
+    "hash": "0x2C3731D9",
+    "file": "icons/weapon_stickybomb.png",
+    "width": 152,
+    "height": 64,
+    "source": "https://wiki.rage.mp/w/images/3/3a/Sticky-bomb-icon.png"
+  },
+  {
+    "category": "Throwables",
+    "id": "weapon_proxmine",
+    "name": "Proximity Mines",
+    "hash": "0xAB564B93",
+    "file": "icons/weapon_proxmine.png",
+    "width": 141,
+    "height": 60,
+    "source": "https://wiki.rage.mp/w/images/a/a8/Proximity-mines-icon.png"
+  },
+  {
+    "category": "Throwables",
+    "id": "weapon_snowball",
+    "name": "Snowballs",
+    "hash": "0x787F0BB",
+    "file": "icons/weapon_snowball.png",
+    "width": 76,
+    "height": 77,
+    "source": "https://wiki.rage.mp/w/images/0/04/Snowball-icon.png"
+  },
+  {
+    "category": "Throwables",
+    "id": "weapon_pipebomb",
+    "name": "Pipe Bombs",
+    "hash": "0xBA45E8B8",
+    "file": "icons/weapon_pipebomb.png",
+    "width": 185,
+    "height": 61,
+    "source": "https://wiki.rage.mp/w/images/d/dc/Pipe-bomb-icon.png"
+  },
+  {
+    "category": "Throwables",
+    "id": "weapon_ball",
+    "name": "Baseball",
+    "hash": "0x23C9F95C",
+    "file": "icons/weapon_ball.png",
+    "width": 72,
+    "height": 69,
+    "source": "https://wiki.rage.mp/w/images/4/4b/Ball-icon.png"
+  },
+  {
+    "category": "Throwables",
+    "id": "weapon_smokegrenade",
+    "name": "Tear Gas",
+    "hash": "0xFDBC8A50",
+    "file": "icons/weapon_smokegrenade.png",
+    "width": 60,
+    "height": 129,
+    "source": "https://wiki.rage.mp/w/images/8/8a/Tear-gas-icon.png"
+  },
+  {
+    "category": "Throwables",
+    "id": "weapon_flare",
+    "name": "Flare",
+    "hash": "0x497FACC3",
+    "file": "icons/weapon_flare.png",
+    "width": 153,
+    "height": 33,
+    "source": "https://wiki.rage.mp/w/images/0/09/Flare-icon.png"
+  },
+  {
+    "category": "Throwables",
+    "id": "weapon_acidpackage",
+    "name": "Acid Package",
+    "hash": "0xF7F1E25E",
+    "file": "icons/weapon_acidpackage.png",
+    "width": 218,
+    "height": 61,
+    "source": "https://wiki.rage.mp/w/images/0/01/Acid-package-icon.png"
+  },
+  {
+    "category": "Miscellaneous",
+    "id": "weapon_petrolcan",
+    "name": "Jerry Can",
+    "hash": "0x34A67B97",
+    "file": "icons/weapon_petrolcan.png",
+    "width": 108,
+    "height": 138,
+    "source": "https://wiki.rage.mp/w/images/2/2b/Petrolcan-icon.png"
+  },
+  {
+    "category": "Miscellaneous",
+    "id": "gadget_parachute",
+    "name": "Parachute",
+    "hash": "0xFBAB5776",
+    "file": "icons/gadget_parachute.png",
+    "width": 106,
+    "height": 137,
+    "source": "https://wiki.rage.mp/w/images/2/24/Parachute-icon.png"
+  },
+  {
+    "category": "Miscellaneous",
+    "id": "weapon_fireextinguisher",
+    "name": "Fire Extinguisher",
+    "hash": "0x060EC506",
+    "file": "icons/weapon_fireextinguisher.png",
+    "width": 350,
+    "height": 821,
+    "source": "https://wiki.rage.mp/w/images/1/13/Fire2.png"
+  },
+  {
+    "category": "Miscellaneous",
+    "id": "weapon_hazardcan",
+    "name": "Hazardous Jerry Can",
+    "hash": "0xBA536372",
+    "file": "icons/weapon_hazardcan.png",
+    "width": 108,
+    "height": 138,
+    "source": "https://wiki.rage.mp/w/images/2/2b/Petrolcan-icon.png"
+  },
+  {
+    "category": "Miscellaneous",
+    "id": "weapon_fertilizercan",
+    "name": "Fertilizer Can",
+    "hash": "0x184140A1",
+    "file": "icons/weapon_fertilizercan.png",
+    "width": 108,
+    "height": 138,
+    "source": "https://wiki.rage.mp/w/images/2/2b/Petrolcan-icon.png"
+  }
+]

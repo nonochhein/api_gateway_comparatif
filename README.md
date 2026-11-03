@@ -18,7 +18,7 @@ des deux SSO sur les mêmes routes. Un « consommateur » Kong par SSO (`sso-aut
 ## Site Ammu-Nation (front) et données
 
 Le site (`frontend/`, HTML/CSS/JS, servi par nginx **derrière Kong**) imite la boutique d'armes d'Ammu-Nation de GTA V : charte rouge / blanc / noir,
-curseur « doigt d'honneur » parodique, catalogue paginé avec filtres, recherche, panier et commande. **Aucune vente réelle** ; les images sont des silhouettes dessinées pour le projet (pas d'assets de Rockstar).
+curseur « doigt d'honneur » parodique, catalogue paginé avec filtres, recherche, panier et commande. **Aucune vente réelle**. Les images des armes sont les icônes du jeu (© Rockstar Games), récupérées sur [wiki.rage.mp](https://wiki.rage.mp) et utilisées ici pour un travail scolaire non commercial. La source de chaque icône est indiquée dans `db/weapons.json`.
 Il utilise les vrais formats du backend : `GET /api/products` (page), `GET /api/categories`, `POST /api/orders` `{userId, items:[{productId, quantity}]}`.
 
 Ouvrir `http://localhost:8000`. Commander demande un jeton du SSO : le SSO n'existant pas encore, le bouton « Connexion SSO » accepte un JWT collé à la main.
@@ -27,13 +27,14 @@ Une console en bas de page affiche statut et `X-Request-Id` de chaque appel.
 Curseur : **poing fermé** en navigation, **doigt d'honneur 8 bit** au clic (le curseur change 0,45 s et un petit sprite jaillit, y compris au tactile).
 Les curseurs sont générés par `python3 scripts/make_cursors.py` (PNG 32×32 en pixel art, modifiables dans le script).
 
-Photos : le site affiche des silhouettes dessinées par défaut. Pour mettre de vraies photos, déposer les fichiers dans `frontend/images/photos/` et les lister dans
+Images : chaque produit affiche l'icône indiquée par son `imageUrl` (`/images/weapons/*.png`), ou une silhouette SVG dessinée pour le projet (armure, munitions, produits créés sans image). Pour remplacer une image par une photo, déposer les fichiers dans `frontend/images/photos/` et les lister dans
 `frontend/images/photos/manifest.json` sous la forme `{"GTA-PISTOL": "pistol.jpg", "GTA-SNIPER": "sniper.jpg"}` (clé = `sku` du produit). Aucun autre changement n'est nécessaire.
 Vérifier le droit d'utiliser chaque image (pour un travail scolaire, citer la source).
 
 ### Armes du jeu dans la base
 
-`db/gta-weapons.sql` ajoute 7 catégories et 28 armes (prix inspirés du jeu, approximatifs). Il est **rejouable** : il ne supprime rien (les 4 produits d'origine `AMMU-001..004` sont seulement désactivés)
+`db/gta-weapons.sql` ajoute 11 catégories et 106 produits (104 armes et objets du jeu, plus l'armure et les munitions ; prix inspirés du jeu, approximatifs).
+Il est généré par `python3 scripts/make_weapons_sql.py` à partir de `db/weapons.json`, qui donne la liste des armes et le fichier de chaque icône (dans `frontend/images/weapons/`). Les prix et descriptions se modifient dans ce script. Il est **rejouable** : il ne supprime rien (les 4 produits d'origine `AMMU-001..004` sont seulement désactivés)
 et ne touche pas au stock d'un produit déjà présent. À lancer depuis le dossier du **backend**, une fois ses conteneurs démarrés :
 
 ```bash

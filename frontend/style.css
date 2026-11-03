@@ -65,6 +65,10 @@ main{max-width:1240px;margin:0 auto;padding:30px 20px 10px}
 .pic{position:relative;aspect-ratio:16/10;background:#111;overflow:hidden;border-bottom:4px solid var(--red)}
 .pic img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
 .card:hover .pic img{transform:scale(1.06)}
+/* Icônes du jeu (PNG détourés, très larges) : fond clair, image entière, contours nets */
+.pic:has(img[src*="/weapons/"]){background:radial-gradient(circle at 50% 45%,#fff 0,#e4e4e4 70%,#cfcfcf 100%)}
+.pic img[src*="/weapons/"]{object-fit:contain;padding:14% 9% 9%;filter:drop-shadow(0 3px 2px rgba(0,0,0,.25))}
+.cart li img[src*="/weapons/"]{object-fit:contain;background:#e9e9e9;padding:3px}
 .pic .cat{position:absolute;left:10px;top:10px;background:var(--ink);color:#fff;font-size:.64rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;border-radius:3px}
 .pic .flag{position:absolute;right:0;top:12px;background:var(--yellow);color:#000;font-size:.66rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px 4px 12px;clip-path:polygon(8px 0,100% 0,100% 100%,8px 100%,0 50%)}
 .pic .flag.out{background:#777;color:#fff}
