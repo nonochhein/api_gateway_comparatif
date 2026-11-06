@@ -4,12 +4,12 @@
 _format_version: "3.0"
 
 consumers:
-  # À REMPLACER : "key" = valeur exacte de la claim "iss" des jetons du SSO ; rsa_public_key = clé publique du SSO (PEM).
+  # Les "key" sont les issuers locaux (cf. frontend/sso-config.js) ; rsa_public_key : à remplacer avec scripts/sync_sso_keys.py. "key" = valeur exacte de la claim "iss" des jetons du SSO ; rsa_public_key = clé publique du SSO (PEM).
   # Les clés ci-dessous sont des clés de DÉMO dont la clé privée a été détruite : aucun jeton réel ne sera accepté tant qu'elles ne sont pas remplacées.
   - username: sso-authentik
     jwt_secrets:
       - algorithm: RS256
-        key: "https://authentik.example.com/application/o/ammu-nation/"
+        key: "http://localhost:9000/application/o/ammu-nation/"
         rsa_public_key: |
           -----BEGIN PUBLIC KEY-----
           MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArLAw+OVP6PGh5BquzLrB
@@ -23,7 +23,7 @@ consumers:
   - username: sso-authelia
     jwt_secrets:
       - algorithm: RS256
-        key: "https://auth.example.com"
+        key: "https://auth.ammu.lvh.me"
         rsa_public_key: |
           -----BEGIN PUBLIC KEY-----
           MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA32bD9y3XKAjwgGtoJMCe

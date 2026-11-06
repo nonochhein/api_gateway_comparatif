@@ -26,8 +26,11 @@ bandeau boursier façon Wall Street en haut (fausses actions du jeu qui bougent 
 curseur « doigt d'honneur » parodique, catalogue paginé avec filtres, recherche, panier et commande. **Aucune vente réelle**. Les images des armes sont les icônes du jeu (© Rockstar Games), récupérées sur [wiki.rage.mp](https://wiki.rage.mp) et utilisées ici pour un travail scolaire non commercial. La source de chaque icône est indiquée dans `db/weapons.json`.
 Il utilise les vrais formats du backend : `GET /api/products` (page), `GET /api/categories`, `POST /api/orders` `{userId, items:[{productId, quantity}]}`.
 
-Ouvrir `http://localhost:8000`. Commander demande un jeton du SSO : le SSO n'existant pas encore, le bouton « Connexion SSO » accepte un JWT collé à la main.
-En local, `scripts/dev-sso.sh` ajoute à Kong un SSO de développement (clé générée dans `.dev/`, ignoré par git) et écrit un jeton de 12 h dans `.dev/token.txt` : le coller dans « SSO login ».
+Ouvrir `http://localhost:8000`. Commander demande un jeton d'un des deux SSO : le bouton « SSO login » ouvre un choix **Authentik / Authelia**, puis une vraie connexion OpenID Connect (code + PKCE, client public `ammu-nation-swagger`, redirect URI `http://localhost:8000/`).
+Les deux SSO sont toujours présents dans le code (`frontend/sso-config.js` + `frontend/sso.js`) ; pour **switcher** sans passer par la fenêtre de choix : `http://localhost:8000/?sso=authentik` ou `?sso=authelia` (mémorisé pour l'onglet ; `?sso=ask` redemande), ou `default:` dans `sso-config.js`. Le nom du SSO s'affiche à côté de l'utilisateur. « Paste a token instead » reste possible.
+Côté backend, `order-service` n'accepte qu'un SSO à la fois (`SPRING_PROFILES_ACTIVE=authentik|authelia`, voir le README du backend) : pour tester un SSO, lancer le même des deux côtés.
+Mise en route : `python3 scripts/sync_sso_keys.py --insecure` (récupère les clés publiques des deux SSO lancés et les écrit dans `kong/kong.yml`), puis `docker compose up -d --force-recreate kong`.
+En local, `scripts/dev-sso.sh` ajoute à Kong un SSO de développement (clé générée dans `.dev/`, ignoré par git) et écrit un jeton de 12 h dans `.dev/token.txt` : le coller dans « Paste a token instead ».
 `scripts/dev-sso.sh off` remet Kong sur `kong/kong.yml`. Kafbat (http://localhost:8083) montre les messages du topic `orders.events.v1`.
 Une console en bas de page affiche statut et `X-Request-Id` de chaque appel.
 
@@ -76,8 +79,8 @@ Swagger (`/swagger-ui`, `/v3/api-docs`) n'est volontairement pas routé.
 ## Brancher les deux SSO (à faire : les clés de `kong/kong.yml` sont des clés de démo)
 
 Pour **chaque** SSO, deux valeurs à mettre dans `consumers:` de `kong/kong.yml` :
-1. `key` = valeur exacte de la claim `iss` de ses jetons (décoder un jeton sur jwt.io, ou lire le champ `issuer` de son `/.well-known/openid-configuration`).
-2. `rsa_public_key` = sa clé publique de signature, obtenue avec le script :
+1. `key` = valeur exacte de la claim `iss` de ses jetons (déjà renseignée pour les URL locales : `http://localhost:9000/application/o/ammu-nation/` et `https://auth.ammu.lvh.me`) (décoder un jeton sur jwt.io, ou lire le champ `issuer` de son `/.well-known/openid-configuration`).
+2. `rsa_public_key` = sa clé publique de signature : `python3 scripts/sync_sso_keys.py` fait les deux d'un coup, ou à la main avec :
 ```bash
 python3 scripts/jwks_to_pem.py https://<authentik>/application/o/<slug>/jwks/   # Authentik
 python3 scripts/jwks_to_pem.py https://<authelia>/jwks.json                      # Authelia

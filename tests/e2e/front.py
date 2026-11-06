@@ -114,6 +114,32 @@ with sync_playwright() as pw:
         page.click("#closeCart")
     check("commande refusée sans connexion", logged_out)
 
+    def sso(name, label, iss):                     # faux fournisseur OIDC simulé par le navigateur (code + PKCE)
+        seen = {}
+        def authorize(route):
+            from urllib.parse import urlparse, parse_qs
+            q = parse_qs(urlparse(route.request.url).query)
+            seen["auth"] = {k: v[0] for k, v in q.items()}
+            route.fulfill(status=302, headers={"Location": f"{q['redirect_uri'][0]}?code=abc&state={q['state'][0]}"})
+        def token(route):
+            seen["token_body"] = route.request.post_data
+            jwt = f"{b64({'alg': 'RS256'})}.{b64({'iss': iss, 'sub': 'u1', 'preferred_username': 'bob', 'exp': 9999999999})}.x"
+            route.fulfill(status=200, content_type="application/json", headers={"Access-Control-Allow-Origin": "*"},
+                          body=json.dumps({"access_token": jwt, "token_type": "Bearer"}))
+        page.route(f"**/{'application/o/authorize' if name == 'authentik' else 'api/oidc/authorization'}**", authorize)
+        page.route(f"**/{'application/o/token' if name == 'authentik' else 'api/oidc/token'}**", token)
+        page.evaluate("sessionStorage.clear()"); page.goto(URL)
+        page.click("#login")
+        page.click(f"[data-sso={name}]")
+        expect(page.locator("#who")).to_contain_text(f"bob ({label})")
+        a = seen["auth"]
+        assert a["client_id"] == "ammu-nation-swagger" and a["code_challenge_method"] == "S256" and a["code_challenge"], a
+        assert "code_verifier=" in seen["token_body"] and "code=abc" in seen["token_body"], seen["token_body"]
+        assert "code=" not in page.url, page.url        # l'URL est nettoyée
+        page.unroute_all()
+    check("SSO Authentik : choix, code + PKCE, jeton récupéré", lambda: sso("authentik", "Authentik", "http://localhost:9000/application/o/ammu-nation/"))
+    check("SSO Authelia : choix, code + PKCE, jeton récupéré", lambda: sso("authelia", "Authelia", "https://auth.ammu.lvh.me"))
+
     def orders():
         page.evaluate("t => sessionStorage.setItem('token', t)", TOKEN)
         page.reload()

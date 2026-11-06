@@ -79,7 +79,7 @@ function toast(msg, err) {
   $("toasts").appendChild(t); setTimeout(() => t.remove(), 2600);
 }
 
-/* ---------- SSO : pas encore en place, on colle un jeton en attendant ---------- */
+/* ---------- SSO : Authentik et Authelia (voir sso.js / sso-config.js) ---------- */
 function userFromToken() {
   if (!token) return null;
   try {
@@ -89,7 +89,8 @@ function userFromToken() {
 }
 function refreshWho() {
   const u = userFromToken();
-  $("who").textContent = u ? "● " + u : "";
+  const prov = token && SSO.providerOf(token);
+  $("who").textContent = u ? "● " + u + (prov ? " (" + SSO.providers[prov].label + ")" : "") : "";
   $("login").textContent = u ? "Log out" : "SSO login";
   loadOrders(); loadNotifs();
 }
@@ -409,7 +410,7 @@ function say(msg, ok) { $("orderMsg").textContent = msg; $("orderMsg").className
 async function checkout() {
   const items = Object.entries(cart).map(([productId, { qty }]) => ({ productId, quantity: qty }));
   if (!items.length) return say("Your cart is empty.", false);
-  if (!token) return say("SSO login required to order (SSO isn't wired up yet: paste a token).", false);
+  if (!token) return say("SSO login required to order.", false);
   $("checkout").disabled = true; $("checkout").textContent = "Sending…";
   let res;
   try { res = await api("POST", "/api/orders", { userId: userFromToken(), items }); }
@@ -427,11 +428,32 @@ async function checkout() {
   else say(`Error ${res.status} — ${body.detail || body.title || "order service unavailable"}.`, false);
 }
 
-$("login").onclick = () => {
-  if (token) { token = null; try { sessionStorage.removeItem("token"); } catch (e) {} return refreshWho(); }
-  const t = prompt("SSO isn't wired up yet.\nPaste a JWT (Authentik / Authelia):");
-  if (t && t.split(".").length === 3) { token = t.trim(); try { sessionStorage.setItem("token", token); } catch (e) {} refreshWho(); toast("Logged in"); }
+function setToken(t) { token = t; try { t ? sessionStorage.setItem("token", t) : sessionStorage.removeItem("token"); } catch (e) {} }
+function startSso(name) { SSO.login(name).catch((e) => toast(e.message, true)); }
+function chooseSso() {                                   // fenêtre de choix du SSO (les deux sont disponibles)
+  const dlg = $("ssoDialog"), box = $("ssoChoices"); box.innerHTML = "";
+  for (const [name, p] of Object.entries(SSO.providers)) {
+    const b = document.createElement("button"); b.className = "btn"; b.dataset.sso = name;
+    b.textContent = "Log in with " + p.label + (SSO.active() === name ? " (last used)" : "");
+    b.onclick = () => { dlg.close(); startSso(name); };
+    box.appendChild(b);
+  }
+  dlg.showModal();
+}
+$("ssoPaste").onclick = () => {                           // secours : coller un jeton à la main
+  $("ssoDialog").close();
+  const t = prompt("Paste a JWT (Authentik / Authelia):");
+  if (t && t.split(".").length === 3) { setToken(t.trim()); refreshWho(); toast("Logged in"); }
 };
+$("ssoCancel").onclick = () => $("ssoDialog").close();
+$("login").onclick = () => {
+  if (token) { setToken(null); return refreshWho(); }
+  const forced = new URLSearchParams(location.search).get("sso");
+  if (SSO.active() && (forced || window.SSO_CONFIG.default)) return startSso(SSO.active());
+  chooseSso();
+};
+SSO.handleCallback().then((r) => { if (r) { setToken(r.token); refreshWho(); toast("Logged in with " + SSO.providers[r.provider].label); } })
+  .catch((e) => toast(e.message, true));
 $("cartBtn").onclick = () => openCart($("cart").classList.contains("hidden"));
 $("closeCart").onclick = () => openCart(false);
 $("veil").onclick = () => openCart(false);
