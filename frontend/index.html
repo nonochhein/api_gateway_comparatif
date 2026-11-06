@@ -20,6 +20,12 @@
     <nav><a href="#catalogue">Catalog</a><a href="#orders">My orders</a><a href="#gateway">Gateway</a></nav>
     <div class="actions">
       <span id="who" class="who"></span>
+      <label class="sso-label" for="ssoProvider">SSO
+        <select id="ssoProvider" aria-label="Choose SSO provider">
+          <option value="authentik">Authentik</option>
+          <option value="authelia">Authelia</option>
+        </select>
+      </label>
       <div class="notif-wrap">
         <button id="notifBtn" class="bell hidden" aria-label="Notifications" aria-expanded="false" aria-controls="notifPanel"><span class="ic">🔔</span><span class="badge hidden" id="notifCount">0</span></button>
         <div id="notifPanel" class="notif-panel hidden" role="dialog" aria-label="Notifications">
@@ -110,6 +116,8 @@
 <button id="toTop" class="totop" aria-label="Back to top">↑</button>
 <div id="toasts" class="toasts" aria-live="polite"></div>
 <footer><b>Ammu-Nation</b> — parody. GTA V universe © Rockstar Games. Demo site with no official affiliation; no weapons are sold.</footer>
-<script src="/app.js?v=7"></script>
+<script src="/sso-config.js?v=1"></script>
+<script src="/oidc.js?v=1"></script>
+<script src="/app.js?v=8"></script>
 </body>
 </html>

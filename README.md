@@ -26,9 +26,10 @@ bandeau boursier façon Wall Street en haut (fausses actions du jeu qui bougent 
 curseur « doigt d'honneur » parodique, catalogue paginé avec filtres, recherche, panier et commande. **Aucune vente réelle**. Les images des armes sont les icônes du jeu (© Rockstar Games), récupérées sur [wiki.rage.mp](https://wiki.rage.mp) et utilisées ici pour un travail scolaire non commercial. La source de chaque icône est indiquée dans `db/weapons.json`.
 Il utilise les vrais formats du backend : `GET /api/products` (page), `GET /api/categories`, `POST /api/orders` `{userId, items:[{productId, quantity}]}`.
 
-Ouvrir `http://localhost:8000`. Commander demande un jeton du SSO : le SSO n'existant pas encore, le bouton « Connexion SSO » accepte un JWT collé à la main.
-En local, `scripts/dev-sso.sh` ajoute à Kong un SSO de développement (clé générée dans `.dev/`, ignoré par git) et écrit un jeton de 12 h dans `.dev/token.txt` : le coller dans « SSO login ».
-`scripts/dev-sso.sh off` remet Kong sur `kong/kong.yml`. Kafbat (http://localhost:8083) montre les messages du topic `orders.events.v1`.
+Ouvrir `http://localhost:8000`. Le bouton « SSO login » utilise **Authorization Code + PKCE** : choisir Authentik ou Authelia dans le menu, se connecter chez le fournisseur et revenir sur le site. Pas de mot de passe ni de jeton à coller dans le front.
+La mise en route avec les deux dépôts, les clients OAuth, les clés publiques de Kong et Swagger est décrite dans **[SSO-INTEGRATION.md](SSO-INTEGRATION.md)**.
+Le mode historique de faux jetons `scripts/dev-sso.sh` reste utilisable pour les tests de la gateway, mais n'authentifie pas un utilisateur réel dans le navigateur.
+Kafbat (http://localhost:8083) montre les messages du topic `orders.events.v1`.
 Une console en bas de page affiche statut et `X-Request-Id` de chaque appel.
 
 Curseur 8 bit **noir et blanc** : **poing fermé** en navigation, **doigt d'honneur** dès qu'on survole un élément cliquable (liens, boutons, filtres, fiches produit, champ de recherche) et au clic (un petit sprite jaillit, y compris au tactile).
@@ -75,6 +76,15 @@ Swagger (`/swagger-ui`, `/v3/api-docs`) n'est volontairement pas routé.
 
 ## Brancher les deux SSO (à faire : les clés de `kong/kong.yml` sont des clés de démo)
 
+Préférer la commande automatisée suivante :
+
+```bash
+python3 scripts/configure-kong-sso.py --insecure-dev-tls --backend-root ../tp-cesi-ammu-nation-backend-kafka
+KONG_CONFIG=./.dev/kong-sso.yml docker compose up -d --force-recreate kong
+```
+
+`--insecure-dev-tls` est réservé au certificat autosigné de développement. Le fichier `.dev/kong-sso.yml` contient **uniquement des clés publiques** et n'est pas à commiter. Il faut reconstruire `order-service` après une mise à jour de la clé Authelia. Voir le guide détaillé.
+
 Pour **chaque** SSO, deux valeurs à mettre dans `consumers:` de `kong/kong.yml` :
 1. `key` = valeur exacte de la claim `iss` de ses jetons (décoder un jeton sur jwt.io, ou lire le champ `issuer` de son `/.well-known/openid-configuration`).
 2. `rsa_public_key` = sa clé publique de signature, obtenue avec le script :
@@ -86,15 +96,15 @@ Puis `docker compose restart kong`.
 
 Points d'attention :
 * **Rotation des clés** : Kong OSS ne relit pas le JWKS. Après une rotation de clé du SSO, refaire la commande et redémarrer Kong.
-* **Authelia** : ses jetons d'accès sont opaques par défaut ; Kong ne sait valider que des JWT. Il faut configurer le client OIDC pour émettre des jetons d'accès JWT, ou envoyer l'ID token. Je ne l'ai pas vérifié sur une vraie instance.
+* **Authelia** : Kong et Spring doivent recevoir un **access token JWT signé RS256**, pas un ID token ; les deux clients OIDC fournis sont configurés en conséquence. À vérifier avec les vrais conteneurs.
 * **Algorithme** : RS256 uniquement (ES256 ou EdDSA seraient à ajouter à la config).
 * **Audience (`aud`)** : non vérifiée. Un jeton valide d'une autre application du même SSO passerait.
 
 ## Lancer
 
-1. Backend (dans le dépôt backend) :
+1. Backend (dans le dépôt backend, le Compose est dans un sous-répertoire) :
 ```bash
-docker compose up -d --build
+docker compose -p tp-cesi-ammu-nation-backend-kafka -f "docker compose/docker-compose.yaml" up -d --build
 ```
 2. Gateway (dans ce dépôt) :
 ```bash
@@ -143,7 +153,7 @@ Les résultats PASS / FAIL s'affichent dans le résumé du run. Le backend Java 
 
 ## Sécurité : à savoir
 
-* Le backend n'a pas d'authentification : **la gateway est la seule barrière**. Ne jamais exposer `catalog-service` / `order-service` directement (ports 8081/8082 du compose backend liés à `127.0.0.1` : à conserver).
+* **order-service vérifie aussi les JWT** avec Spring Security (profil `dual` pour les deux issuers). `catalog-service` et `notification-service` ne vérifient pas eux-mêmes les JWT : les routes correspondantes restent protégées par Kong. Ne pas exposer directement ces deux services en production.
 * Les quotas sont locaux à une instance Kong. L'API d'administration de Kong n'est pas exposée hors du conteneur. CORS `*` est à restreindre.
 
 ## Limites de la validation

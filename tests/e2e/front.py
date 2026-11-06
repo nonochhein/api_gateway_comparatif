@@ -115,7 +115,8 @@ with sync_playwright() as pw:
     check("commande refusée sans connexion", logged_out)
 
     def orders():
-        page.evaluate("t => sessionStorage.setItem('token', t)", TOKEN)
+        # Session injectée uniquement dans le mock E2E. En vrai, on utilise OIDC/PKCE.
+        page.evaluate("t => sessionStorage.setItem('ammu-sso-session', JSON.stringify({provider: 'authentik', accessToken: t, expiresAt: Date.now() + 3600000}))", TOKEN)
         page.reload()
         expect(page.locator("#login")).to_have_text("Log out")
         page.click("#cartBtn"); page.click("#checkout")
