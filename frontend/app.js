@@ -4,7 +4,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const PAGE_SIZE = 12;
 let products = [], cats = [], cart = {}, token = null, page = 0, totalPages = 1, total = 0, catId = "", search = "";
 let photos = {};   // sku -> fichier, listé dans /images/photos/manifest.json (vide tant qu'aucune photo n'est ajoutée)
-token = window.AmmuOidc.current()?.accessToken || null;
+try { token = sessionStorage.getItem("token"); } catch (e) {}
 try { cart = JSON.parse(localStorage.getItem("ammu-cart")) || {}; } catch (e) { cart = {}; }
 const saveCart = () => { try { localStorage.setItem("ammu-cart", JSON.stringify(cart)); } catch (e) {} };
 
@@ -79,30 +79,18 @@ function toast(msg, err) {
   $("toasts").appendChild(t); setTimeout(() => t.remove(), 2600);
 }
 
-/* ---------- SSO : Authentik / Authelia, Authorization Code + PKCE ---------- */
+/* ---------- SSO : pas encore en place, on colle un jeton en attendant ---------- */
 function userFromToken() {
   if (!token) return null;
   try {
-    const p = window.AmmuOidc.decodePayload(token);
+    const p = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
     return p.preferred_username || p.email || p.sub || "client";
   } catch (e) { return "client"; }
-}
-function clearSsoSession() {
-  window.AmmuOidc.logout(); token = null;
-}
-function authRejected() {
-  if (!window.AmmuOidc.current()) {
-    clearSsoSession(); refreshWho();
-    toast("Session expired — log in again.", true);
-  } else {
-    toast("401 — token rejected by Kong / order-service. Check both SSO public keys and the backend profile.", true);
-  }
 }
 function refreshWho() {
   const u = userFromToken();
   $("who").textContent = u ? "● " + u : "";
   $("login").textContent = u ? "Log out" : "SSO login";
-  $("ssoProvider").value = window.AmmuOidc.chosenProvider();
   loadOrders(); loadNotifs();
 }
 
@@ -115,7 +103,6 @@ function trace(method, url, res) {
   while ($("log").children.length > 12) $("log").lastChild.remove();
 }
 async function api(method, url, body, quiet) {            // quiet : appel périodique, pas tracé dans la console
-  if (token && !window.AmmuOidc.current()) { clearSsoSession(); refreshWho(); }
   const headers = {};
   if (token) headers.Authorization = "Bearer " + token;
   if (body) headers["Content-Type"] = "application/json";
@@ -287,7 +274,7 @@ async function loadOrders(more) {
   if (orderStatus) q.set("status", orderStatus);
   try {
     const res = await api("GET", "/api/orders?" + q);
-    if (res.status === 401) { authRejected(); return; }
+    if (res.status === 401) { token = null; refreshWho(); return toast("Session expired: please log in again.", true); }
     if (!res.ok) throw new Error("HTTP " + res.status);
     const d = await res.json();
     orders = (more ? orders : []).concat(d.content || []);
@@ -341,7 +328,7 @@ async function orderAction(o, action, btn) {
     setTimeout(loadNotifs, 2500);                          // l'événement part par l'outbox puis Kafka : on regarde un peu après
   } else {
     btn.disabled = false;
-    if (res.status === 401) authRejected();
+    if (res.status === 401) { token = null; refreshWho(); }
     toast(`Error ${res.status} — ${body.detail || body.title || "action not allowed"}`, true);
     if (res.status === 409) loadOrders();                   // état changé ailleurs : on recharge
   }
@@ -422,7 +409,7 @@ function say(msg, ok) { $("orderMsg").textContent = msg; $("orderMsg").className
 async function checkout() {
   const items = Object.entries(cart).map(([productId, { qty }]) => ({ productId, quantity: qty }));
   if (!items.length) return say("Your cart is empty.", false);
-  if (!token) return say("SSO login required to order. Choose Authentik or Authelia above.", false);
+  if (!token) return say("SSO login required to order (SSO isn't wired up yet: paste a token).", false);
   $("checkout").disabled = true; $("checkout").textContent = "Sending…";
   let res;
   try { res = await api("POST", "/api/orders", { userId: userFromToken(), items }); }
@@ -435,20 +422,15 @@ async function checkout() {
     toast("Order placed. Confirm it in “My orders”.");
     orderStatus = ""; renderOrderFilters(); loadOrders();
     loadProducts();
-  } else if (res.status === 401) { authRejected(); say("401 — SSO token rejected or expired (check Kong / backend SSO config).", false); }
+  } else if (res.status === 401) { token = null; refreshWho(); say("401 — token missing, invalid or expired.", false); }
   else if (res.status === 429) say("429 — too many requests, try again in a second.", false);
   else say(`Error ${res.status} — ${body.detail || body.title || "order service unavailable"}.`, false);
 }
 
-$("login").onclick = async () => {
-  if (token) { clearSsoSession(); refreshWho(); return toast("Logged out locally (SSO session remains active)."); }
-  try { await window.AmmuOidc.start(); }
-  catch (e) { toast("SSO login failed: " + e.message, true); }
-};
-$("ssoProvider").onchange = (e) => {
-  window.AmmuOidc.chooseProvider(e.target.value);
-  token = null; refreshWho();
-  toast("SSO switched to " + window.AmmuOidc.providers[e.target.value].label + ". Log in to continue.");
+$("login").onclick = () => {
+  if (token) { token = null; try { sessionStorage.removeItem("token"); } catch (e) {} return refreshWho(); }
+  const t = prompt("SSO isn't wired up yet.\nPaste a JWT (Authentik / Authelia):");
+  if (t && t.split(".").length === 3) { token = t.trim(); try { sessionStorage.setItem("token", token); } catch (e) {} refreshWho(); toast("Logged in"); }
 };
 $("cartBtn").onclick = () => openCart($("cart").classList.contains("hidden"));
 $("closeCart").onclick = () => openCart(false);
@@ -470,9 +452,4 @@ $("prev").onclick = () => { page--; loadProducts(); toCatalogue(); };
 $("next").onclick = () => { page++; loadProducts(); toCatalogue(); };
 let tm; $("search").oninput = (e) => { clearTimeout(tm); tm = setTimeout(() => { search = e.target.value.trim(); page = 0; loadProducts(); }, 300); };
 renderOrderFilters(); refreshWho(); renderCart();
-window.AmmuOidc.completeCallback().then((loggedIn) => {
-  if (!loggedIn) return;
-  token = window.AmmuOidc.current()?.accessToken || null;
-  refreshWho(); toast("Connected with " + window.AmmuOidc.providers[window.AmmuOidc.chosenProvider()].label);
-}).catch((e) => { clearSsoSession(); refreshWho(); toast("SSO callback error: " + e.message, true); });
 Promise.all([loadPhotos(), loadCategories()]).then(loadProducts);

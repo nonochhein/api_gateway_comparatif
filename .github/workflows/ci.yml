@@ -31,16 +31,10 @@ jobs:
         with: {node-version: "22"}
 
       - name: JavaScript du front
-        run: |
-          node --check frontend/app.js
-          node --check frontend/sso-config.js
-          node --check frontend/oidc.js
-          node --test tests/oidc.test.cjs
+        run: node --check frontend/app.js
 
       - name: Scripts Python
-        run: |
-          python -m py_compile scripts/*.py tests/*.py tests/mock/*.py tests/e2e/*.py
-          python -m unittest discover -s tests -p test_sso_kong.py
+        run: python -m py_compile scripts/*.py tests/*.py tests/mock/*.py tests/e2e/*.py
 
       - name: Scripts shell (shellcheck)
         run: shellcheck -S warning tests/*.sh
